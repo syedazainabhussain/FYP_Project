@@ -326,35 +326,20 @@ class _NearbyMechanicCompactCard extends StatelessWidget {
                   onTap: () {
                     // Implement call functionality
                   }),
-    _actionButton(
-    icon: Icons.remove_red_eye,
-    label: "View",
-    color: primaryColor,
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MechanicDetailScreen(
-            serviceType: "View Mechanic",
-            mechanic: Mechanic(
-              id: mechanic['id'].toString(),
-              name: mechanic['name'] ?? '',
-              avatarUrl: mechanic['image'] ?? '',
-              rating: (mechanic['rating'] is int)
-                  ? (mechanic['rating'] as int).toDouble()
-                  : (mechanic['rating'] as double? ?? 0.0),
-              distanceKm: (mechanic['distance'] is int)
-                  ? (mechanic['distance'] as int).toDouble()
-                  : (mechanic['distance'] as double? ?? 0.0),
-              isOnline: mechanic['available'] ?? false,
-              phone: mechanic['phone'] ?? '',
-              lat: (mechanic['lat'] is num) ? (mechanic['lat'] as num).toDouble() : 0.0,
-              lng: (mechanic['lng'] is num) ? (mechanic['lng'] as num).toDouble() : 0.0,
-            ),
-          ),
-        ),
-      );
-    }),
+              _actionButton(
+                  icon: Icons.remove_red_eye,
+                  label: "View",
+                  color: primaryColor,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MechanicDetailScreen(
+                          serviceType: "View Mechanic", mechanic:mechanic as dynamic,
+     
+                        ),
+                      ),);
+                  }),
             ],
           ),
         ],
