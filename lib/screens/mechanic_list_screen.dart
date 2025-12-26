@@ -1,30 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'view_detail.dart';
 
 class MechanicListScreen extends StatelessWidget {
   final String serviceType;
+  final List<Map<String, dynamic>> mechanics;
 
-  MechanicListScreen({super.key, required this.serviceType});
+  const MechanicListScreen({
+    super.key,
+    required this.serviceType,
+    required this.mechanics,
+  });
 
   final Color primaryColor = const Color(0xFFFB3300);
-
-  final List<Map<String, dynamic>> mechanics = [
-    {
-      "name": "Ali Mechanic",
-      "rating": 4.8,
-      "distance": 2.5,
-      "available": true,
-      "image": "assets/images/m1.jpg",
-      "phone": "03001234567",
-    },
-    {
-      "name": "Ahmed Auto Repair",
-      "rating": 4.6,
-      "distance": 4.0,
-      "available": false,
-      "image": "assets/images/m2.png",
-      "phone": "03009876543",
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -47,144 +35,158 @@ class MechanicListScreen extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold)),
             Text(serviceType,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                style: TextStyle(fontSize: 13, color: Colors.grey)),
           ],
         ),
       ),
 
+      // 🔥 SAME CARDS – JUST VERTICAL
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: mechanics.length,
         itemBuilder: (context, index) {
-          final m = mechanics[index];
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6)),
-              ],
-            ),
-            child: Row(
-              children: [
-
-                /// IMAGE
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(18),
-                    bottomLeft: Radius.circular(18),
-                  ),
-                  child: Image.asset(
-                    m['image'],
-                    width: 120,
-                    height: 150,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-
-                /// DETAILS
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-
-                        /// NAME + STATUS
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                m['name'],
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            _statusBadge(m['available']),
-                          ],
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        /// RATING + DISTANCE
-                        Row(
-                          children: [
-                            const Icon(Icons.star,
-                                size: 18, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text("${m['rating']}"),
-                            const SizedBox(width: 12),
-                            Icon(Icons.location_on,
-                                size: 16, color: primaryColor),
-                            const SizedBox(width: 4),
-                            Text("${m['distance']} km"),
-                          ],
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        /// BUTTONS
-                        Row(
-                          children: [
-                            _actionButton(Icons.call, "Call", primaryColor),
-                            const SizedBox(width: 10),
-                            _actionButton(
-                                Icons.visibility, "View", Colors.black),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          return _NearbyMechanicCardVertical(
+            mechanic: mechanics[index],
+            primaryColor: primaryColor,
           );
         },
       ),
     );
   }
+}
 
-  Widget _statusBadge(bool available) {
+// ================= SAME CARD – VERTICAL VERSION =================
+class _NearbyMechanicCardVertical extends StatelessWidget {
+  final Map<String, dynamic> mechanic;
+  final Color primaryColor;
+
+  const _NearbyMechanicCardVertical({
+    required this.mechanic,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: available
-            ? Colors.green.withOpacity(0.12)
-            : Colors.red.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6),
+        ],
       ),
-      child: Text(
-        available ? "Available" : "Busy",
-        style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: available ? Colors.green : Colors.red),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundImage: AssetImage(mechanic['image']),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(mechanic['name'],
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600, fontSize: 15)),
+                    Row(
+                      children: [
+                        const Icon(Icons.star,
+                            size: 14, color: Colors.amber),
+                        Text("${mechanic['rating']}"),
+                        const SizedBox(width: 8),
+                        Icon(Icons.location_on,
+                            size: 14, color: primaryColor),
+                        Text("${mechanic['distance']} km"),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color:
+                      mechanic['available'] ? Colors.green : Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              )
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // 🔥 SAME BUTTONS
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _actionButton(
+                Icons.call_rounded,
+                "Call",
+                Colors.green,
+                () {},
+              ),
+              _actionButton(
+                Icons.remove_red_eye_rounded,
+                "View",
+                primaryColor,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MechanicDetailScreen(
+                        serviceType: "View Mechanic",
+                        mechanic: Mechanic(
+                          id: mechanic['id'].toString(),
+                          name: mechanic['name'],
+                          avatarUrl: mechanic['image'],
+                          rating:
+                              (mechanic['rating'] as num).toDouble(),
+                          distanceKm:
+                              (mechanic['distance'] as num).toDouble(),
+                          isOnline: mechanic['available'],
+                          phone: mechanic['phone'],
+                          lat: 0.0,
+                          lng: 0.0,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _actionButton(IconData icon, String label, Color color) {
-    return Expanded(
+  Widget _actionButton(
+      IconData icon, String label, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 38,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: color.withOpacity(0.12),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 18, color: color),
             const SizedBox(width: 6),
             Text(label,
-                style:
-                    TextStyle(color: color, fontWeight: FontWeight.w600)),
+                style: GoogleFonts.poppins(
+                    color: color,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13)),
           ],
         ),
       ),

@@ -21,22 +21,9 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
   final TextEditingController noteController = TextEditingController();
 
   final Map<String, List<String>> problemOptions = {
-    "Car Mechanic": [
-      "Engine Issue",
-      "AC Not Working",
-      "Battery Problem",
-      "Brake Issue",
-    ],
-    "Bike Mechanic": [
-      "Self Start Problem",
-      "Chain Issue",
-      "Engine Noise",
-    ],
-    "Puncher": [
-      "Flat Tyre",
-      "Air Leakage",
-      "Rim Issue",
-    ],
+    "Car Mechanic": ["Engine Issue", "AC Not Working", "Battery Problem", "Brake Issue"],
+    "Bike Mechanic": ["Self Start Problem", "Chain Issue", "Engine Noise"],
+    "Puncher": ["Flat Tyre", "Air Leakage", "Rim Issue"],
   };
 
   @override
@@ -46,41 +33,66 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 22),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           "${widget.serviceType} Assistant",
-          style: const TextStyle(color: Colors.black),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+          overflow: TextOverflow.visible,
         ),
+        centerTitle: false,
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Skip action placeholder
+            },
+            child: const Text(
+              "Skip",
+              style: TextStyle(
+                color: Colors.deepOrange,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _botBubble("Tell us your problem"),
-            _problemDropdown(),
-
-            const SizedBox(height: 20),
-
-            _botBubble("Is your vehicle moving?"),
-            _yesNoButtons(),
-
-            const SizedBox(height: 20),
-
-            _botBubble("How urgent is this?"),
-            _urgencyDropdown(),
-
-            const SizedBox(height: 20),
-
-            _botBubble("Additional details (optional)"),
-            _noteField(),
-
-            const SizedBox(height: 24),
-
-            _summaryCard(),
-
-            const SizedBox(height: 24),
-
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _questionCard("1. Tell us your problem", _customDropdown(
+                      value: selectedProblem,
+                      hint: "Select problem",
+                      items: problemOptions[widget.serviceType]!,
+                      onChanged: (value) => setState(() => selectedProblem = value),
+                    )),
+                    _questionCard("2. Is your vehicle moving?", _yesNoButtons()),
+                    _questionCard("3. How urgent is this?", _customDropdown(
+                      value: urgency,
+                      hint: "Select urgency",
+                      items: ["Normal", "Urgent", "Emergency"],
+                      onChanged: (value) => setState(() => urgency = value!),
+                    )),
+                    _questionCard("4. Additional details (optional)", _noteField()),
+                    const SizedBox(height: 16),
+                    _summaryCard(),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             _confirmButton(),
           ],
         ),
@@ -88,49 +100,52 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
     );
   }
 
-  // ---------------- Widgets ----------------
-
-  Widget _botBubble(String text) {
+  Widget _questionCard(String question, Widget child) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4),
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(question,
+              style: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+          const SizedBox(height: 12),
+          child,
+        ],
       ),
     );
   }
 
-  Widget _problemDropdown() {
+  Widget _customDropdown({
+    required String? value,
+    required String hint,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          hint: const Text("Select problem"),
-          value: selectedProblem,
+          value: value,
+          hint: Text(hint, style: TextStyle(color: Colors.grey.shade600)),
           isExpanded: true,
-          items: problemOptions[widget.serviceType]!
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                ),
-              )
-              .toList(),
-          onChanged: (value) {
-            setState(() => selectedProblem = value);
-          },
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          onChanged: onChanged,
         ),
       ),
     );
@@ -148,54 +163,39 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
 
   Widget _choiceButton(String value) {
     final bool selected = vehicleMoving == value;
-
     return Expanded(
-      child: InkWell(
-        onTap: () {
-          setState(() => vehicleMoving = value);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: selected ? primaryColor : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: selected ? Colors.white : Colors.black,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        decoration: BoxDecoration(
+          color: selected ? primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? primaryColor : Colors.grey.shade300),
+          boxShadow: [
+            if (selected)
+              BoxShadow(
+                  color: primaryColor.withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3))
+          ],
+        ),
+        child: InkWell(
+          onTap: () {
+            setState(() => vehicleMoving = value);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Center(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: selected ? Colors.white : Colors.black87,
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _urgencyDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: urgency,
-          isExpanded: true,
-          items: ["Normal", "Urgent", "Emergency"]
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                ),
-              )
-              .toList(),
-          onChanged: (value) {
-            setState(() => urgency = value!);
-          },
         ),
       ),
     );
@@ -208,9 +208,9 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
       decoration: InputDecoration(
         hintText: "Type here...",
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.grey.shade100,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
       ),
@@ -219,12 +219,13 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
 
   Widget _summaryCard() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4),
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -234,14 +235,25 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
             "Summary",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          Text("Service: ${widget.serviceType}"),
-          Text("Problem: ${selectedProblem ?? "-"}"),
-          Text("Vehicle Moving: ${vehicleMoving ?? "-"}"),
-          Text("Urgency: $urgency"),
-          Text(
-            "Notes: ${noteController.text.isEmpty ? "-" : noteController.text}",
-          ),
+          const Divider(color: Colors.orange, thickness: 1.2),
+          const SizedBox(height: 6),
+          _summaryRow("Service", widget.serviceType),
+          _summaryRow("Problem", selectedProblem ?? "-"),
+          _summaryRow("Vehicle Moving", vehicleMoving ?? "-"),
+          _summaryRow("Urgency", urgency),
+          _summaryRow("Notes", noteController.text.isEmpty ? "-" : noteController.text),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text("$label:", style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(child: Text(value, style: const TextStyle(color: Colors.black87))),
         ],
       ),
     );
@@ -254,45 +266,32 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         onPressed: isSubmitting
             ? null
             : () async {
                 if (selectedProblem == null || vehicleMoving == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please complete required fields"),
-                    ),
+                    const SnackBar(content: Text("Please complete required fields")),
                   );
                   return;
                 }
 
                 setState(() => isSubmitting = true);
-
-                // 🔴 API CALL FUTURE MEIN YAHAN ADD KAROGI
-
                 await Future.delayed(const Duration(seconds: 1));
-
                 setState(() => isSubmitting = false);
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const AutoAssignScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const AutoAssignScreen()),
                 );
               },
         child: isSubmitting
             ? const CircularProgressIndicator(color: Colors.white)
             : const Text(
                 "Confirm & Find Mechanic",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
       ),
     );
