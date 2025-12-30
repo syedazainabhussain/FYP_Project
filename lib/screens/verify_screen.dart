@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'user_session.dart'; // Ensure this file exists
+import 'user_session.dart';
 import 'otpScreenforgotpassword.dart';
 import 'r_screen.dart';
 import 'enable_loc.dart';
 
 class VerifyScreen extends StatefulWidget {
-  const VerifyScreen({super.key} );
+  const VerifyScreen({super.key});
 
   @override
   State<VerifyScreen> createState() => _VerifyScreenState();
@@ -19,8 +19,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool isValid = false;
-  bool isLoading = false; 
-  bool isForgotLoading = false; // Loading for forgot password
+  bool isLoading = false;
+  bool isForgotLoading = false;
+
+  /// 🔴 ADDED
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -54,24 +57,23 @@ class _VerifyScreenState extends State<VerifyScreen> {
     if (isLoading) return;
 
     setState(() {
-      isLoading = true; 
+      isLoading = true;
     });
 
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     final url = Uri.parse(
-        "https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/login" );
+        "https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/login");
 
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password} ),
+        body: jsonEncode({"email": email, "password": password}),
       );
 
       if (response.statusCode == 200) {
-        // 🔐 SAVE CREDENTIALS TO SESSION
         UserSession().email = email;
         UserSession().password = password;
 
@@ -101,13 +103,13 @@ class _VerifyScreenState extends State<VerifyScreen> {
     setState(() => isForgotLoading = true);
 
     final url = Uri.parse(
-        "https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/forgot" );
+        "https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/forgot");
 
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email} ),
+        body: jsonEncode({"email": email}),
       );
 
       if (response.statusCode == 200) {
@@ -143,14 +145,18 @@ class _VerifyScreenState extends State<VerifyScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Welcome Back 👋",
-                  style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 28, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text("Login with your email and password",
-                  style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 15, color: Colors.black54)),
               const SizedBox(height: 50),
 
               // EMAIL
-              Text("Email", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500)),
+              Text("Email",
+                  style: GoogleFonts.poppins(
+                      fontSize: 15, fontWeight: FontWeight.w500)),
               const SizedBox(height: 6),
               TextField(
                 controller: _emailController,
@@ -160,13 +166,29 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
               const SizedBox(height: 22),
 
-              // PASSWORD
-              Text("Password", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500)),
+              // PASSWORD (👁 added)
+              Text("Password",
+                  style: GoogleFonts.poppins(
+                      fontSize: 15, fontWeight: FontWeight.w500)),
               const SizedBox(height: 6),
               TextField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: _inputDecoration("Min 8 characters"),
+                obscureText: _obscurePassword,
+                decoration: _inputDecoration("Min 8 characters").copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: const Color(0xFFFB3300),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
               ),
 
               const SizedBox(height: 30),
@@ -179,17 +201,20 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   onPressed: (isValid && !isLoading) ? _login : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFB3300),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : Text("Login", style: GoogleFonts.poppins(fontSize: 17, color: Colors.white)),
+                      : Text("Login",
+                          style: GoogleFonts.poppins(
+                              fontSize: 17, color: Colors.white)),
                 ),
               ),
 
               const SizedBox(height: 15),
 
-              // FORGOT PASSWORD WITH LOADING
+              // FORGOT PASSWORD
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
@@ -201,11 +226,15 @@ class _VerifyScreenState extends State<VerifyScreen> {
                         const SizedBox(
                           width: 14,
                           height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFB3300)),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFFB3300)),
                         ),
                       if (isForgotLoading) const SizedBox(width: 8),
                       Text(
-                        isForgotLoading ? "Forgetting password..." : "Forgot Password?",
+                        isForgotLoading
+                            ? "Forgetting password..."
+                            : "Forgot Password?",
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -223,11 +252,19 @@ class _VerifyScreenState extends State<VerifyScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Don't have an account? ", style: GoogleFonts.poppins(fontSize: 14)),
+                  Text("Don't have an account? ",
+                      style: GoogleFonts.poppins(fontSize: 14)),
                   GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const RegisterScreen()),
+                    ),
                     child: Text("Register",
-                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFFFB3300))),
+                        style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFFB3300))),
                   ),
                 ],
               ),
@@ -245,11 +282,13 @@ class _VerifyScreenState extends State<VerifyScreen> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFFB3300), width: 1.3),
+        borderSide:
+            const BorderSide(color: Color(0xFFFB3300), width: 1.3),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFFB3300), width: 2),
+        borderSide:
+            const BorderSide(color: Color(0xFFFB3300), width: 2),
       ),
     );
   }

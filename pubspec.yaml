@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   google_fonts: ^6.0.0
+  image_picker: ^1.0.7
   
   
   

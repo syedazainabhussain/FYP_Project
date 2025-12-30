@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mech_app/screens/m_login.dart';
 import 'package:mech_app/screens/view_detail.dart';
 import 'mechanic_list_screen.dart';
 import 'auto_assign.dart';
@@ -289,7 +290,11 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Navigate to Mechanic Registration screen
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const MechanicLoginScreen()),
+                      );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange,
