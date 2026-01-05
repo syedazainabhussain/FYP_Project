@@ -55,8 +55,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
       final emailValid = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+      // ✅ Only check that email is valid and password is not empty
       setState(() {
-        isValid = emailValid && password.length >= 8;
+        isValid = emailValid && password.isNotEmpty;
       });
     } else {
       final phone = _phoneController.text.trim();
@@ -315,7 +316,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: _inputDecoration("Min 8 characters"),
+                  decoration: _inputDecoration("Enter your registered password"),
                 ),
               ] else ...[
                  // PHONE FIELD

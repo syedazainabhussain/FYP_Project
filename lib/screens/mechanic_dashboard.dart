@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'mechanic_login.dart';
-import 'user_session.dart';
 
 class MechanicDashboardScreen extends StatefulWidget {
   const MechanicDashboardScreen({super.key});
@@ -15,7 +13,6 @@ class MechanicDashboardScreen extends StatefulWidget {
 class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
   final Color primaryColor = const Color(0xFFFB3300);
 
-  // Sample service requests
   List<Map<String, dynamic>> requests = [
     {
       'user': 'Ali Khan',
@@ -24,7 +21,6 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
       'distance': 2.5,
       'earnings': 1200,
       'timer': 60,
-      'actionTaken': false,
     },
     {
       'user': 'Sarah Ahmed',
@@ -33,19 +29,17 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
       'distance': 3.2,
       'earnings': 800,
       'timer': 60,
-      'actionTaken': false,
     },
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Calculate total earnings
-    double totalEarnings = requests.fold(0, (sum, r) => sum + r['earnings']);
+    double totalEarnings =
+        requests.fold(0, (sum, r) => sum + r['earnings']);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
 
-      /// APP BAR
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -60,68 +54,88 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.notifications_active_outlined,
-              color: primaryColor,
-            ),
+            icon: Icon(Icons.notifications_active_outlined,
+                color: primaryColor),
             onPressed: _openNotifications,
           ),
         ],
       ),
 
-      /// DRAWER
+      /// 🔥 UPDATED DRAWER (PROFILE KE NEECHE OPTIONS)
       drawer: Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: primaryColor),
-              child: Center(
-                child: Text(
-                  'Mechanic Menu',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
+        child: SafeArea(
+          child: Column(
+            children: [
+              /// HEADER
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 36,
+                      backgroundColor: primaryColor.withOpacity(0.15),
+                      child: Icon(Icons.build,
+                          size: 34, color: primaryColor),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Mechanic Panel',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(),
+
+              /// MAIN OPTIONS
+              _drawerItem(Icons.dashboard_outlined, 'Dashboard'),
+              _drawerItem(Icons.receipt_long_outlined, 'Booking Requests'), // ✅ Updated icon
+              _drawerItem(Icons.payment_outlined, 'Earnings'),
+              _drawerItem(Icons.person_outline, 'Profile'),
+
+              /// 🔻 LINE PROFILE KE FORAN BAAD
+              const Divider(),
+
+              /// SETTINGS + LOGOUT
+              _drawerItem(Icons.settings_outlined, 'Settings'),
+              _drawerItem(Icons.logout, 'Logout'),
+
+              /// SWITCH MODE BUTTON
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.swap_horiz),
+                    label: Text(
+                      'Switch to User Mode',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            _drawerItem(Icons.dashboard, 'Dashboard'),
-            _drawerItem(Icons.history, 'Booking History'),
-            _drawerItem(Icons.payment, 'Earnings'),
-            _drawerItem(Icons.person, 'Profile'),
-            _drawerItem(Icons.settings, 'Settings'),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await UserSession().logout();
-                  if (context.mounted) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MechanicLoginScreen()),
-                      (route) => false,
-                    );
-                  }
-                },
-                icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
 
-      /// BODY: Total Earnings Card
+      /// BODY (UNCHANGED)
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(
@@ -159,7 +173,7 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
     );
   }
 
-  /// 🔔 OPEN SERVICE REQUESTS MODAL
+  /// NOTIFICATIONS
   void _openNotifications() {
     showModalBottomSheet(
       context: context,
@@ -168,12 +182,10 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        Timer? modalTimer;
-
+        Timer? timer;
         return StatefulBuilder(
           builder: (context, setModalState) {
-            // Start the timer inside modal
-            modalTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+            timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
               setModalState(() {
                 for (var r in requests) {
                   if (r['status'] == 'Pending' && r['timer'] > 0) {
@@ -183,32 +195,23 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
               });
             });
 
-            return WillPopScope(
-              onWillPop: () async {
-                modalTimer?.cancel(); // stop timer when modal closes
-                return true;
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      'Service Requests',
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: ListView(
+                children: requests.map((r) {
+                  return ListTile(
+                    title: Text(r['user'],
+                        style: GoogleFonts.poppins()),
+                    subtitle: Text(
+                        '${r['service']} • ${r['distance']} km'),
+                    trailing: Text(
+                      '${r['timer']}s',
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                          color: primaryColor,
+                          fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: ListView(
-                        children: requests.map((r) {
-                          return _requestCard(r, () => setModalState(() {}));
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
             );
           },
@@ -217,88 +220,6 @@ class _MechanicDashboardScreenState extends State<MechanicDashboardScreen> {
     );
   }
 
-  /// REQUEST CARD
-  Widget _requestCard(Map<String, dynamic> r, VoidCallback refresh) {
-    bool pending = r['status'] == 'Pending';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // User & Timer / Status
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(r['user'],
-                  style: GoogleFonts.poppins(
-                      fontSize: 16, fontWeight: FontWeight.w600)),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  pending ? 'Pending (${r['timer']}s)' : r['status'],
-                  style: GoogleFonts.poppins(
-                      color: primaryColor, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text('${r['service']} • ${r['distance']} km away'),
-          const SizedBox(height: 6),
-          Text('Earnings: PKR ${r['earnings']}'),
-          if (pending)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    _updateStatus(r, 'Accepted');
-                    refresh();
-                  },
-                  child: Text('Accept',
-                      style: TextStyle(
-                          color: primaryColor, fontWeight: FontWeight.bold)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _updateStatus(r, 'Rejected');
-                    refresh();
-                  },
-                  child: Text('Reject',
-                      style: TextStyle(
-                          color: primaryColor, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-
-  /// UPDATE STATUS
-  void _updateStatus(Map<String, dynamic> r, String status) {
-    setState(() {
-      r['status'] = status;
-      r['actionTaken'] = true;
-      r['timer'] = 0; // stop timer visually
-    });
-  }
-
-  /// DRAWER ITEM
   Widget _drawerItem(IconData icon, String title) {
     return ListTile(
       leading: Icon(icon, color: primaryColor),
