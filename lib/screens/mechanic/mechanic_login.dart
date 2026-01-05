@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mech_app/screens/mechanic_registration_screen.dart';
+import 'package:mech_app/screens/mechanic/mechanic_registration_screen.dart';
 import 'mechanic_dashboard.dart';
-import 'user_session.dart';
+import '../authentication/user_session.dart';
 
 class MechanicLoginScreen extends StatefulWidget {
   const MechanicLoginScreen({super.key});

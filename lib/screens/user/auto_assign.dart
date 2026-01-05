@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'map_screen.dart';
+import '../authentication/map_screen.dart';
 import 'homescreen.dart';
 
 class AutoAssignScreen extends StatelessWidget {

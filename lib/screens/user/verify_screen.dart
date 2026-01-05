@@ -1,34 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'otp_screen.dart';
-import 'phone_otp_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../services/phone_auth_service.dart';
+import '../authentication/user_session.dart'; 
+import '../authentication/otpScreenforgotpassword.dart';
+import 'r_screen.dart';
+import '../authentication/enable_loc.dart';
+import '../authentication/phone_otp_screen.dart';
+import '../../services/phone_auth_service.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class VerifyScreen extends StatefulWidget {
+  const VerifyScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<VerifyScreen> createState() => _VerifyScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController _emailC = TextEditingController();
-  final TextEditingController _passC = TextEditingController();
-  final TextEditingController _phoneC = TextEditingController();
+class _VerifyScreenState extends State<VerifyScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   
   final PhoneAuthService _phoneAuthService = PhoneAuthService();
 
   bool isValid = false;
-  bool hidePassword = true;
-  bool isLoading = false;
+  bool isLoading = false; 
+  bool isForgotLoading = false; 
   
   // Toggle: true = Email, false = Phone
   bool isEmailMode = true;
   String _selectedCountryCode = '+92';
-
+  
   final Color kButtonColor = const Color(0xFFFB3300);
 
   final List<Map<String, String>> _countryCodes = [
@@ -42,73 +45,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    _emailC.addListener(_validate);
-    _passC.addListener(_validate);
-    _phoneC.addListener(_validate);
+    _emailController.addListener(_validateInputs);
+    _passwordController.addListener(_validateInputs);
+    _phoneController.addListener(_validateInputs);
   }
 
-  void _validate() {
+  void _validateInputs() {
     if (isEmailMode) {
-      final email = _emailC.text.trim();
-      final pass = _passC.text.trim();
-      bool validEmail = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-          .hasMatch(email);
-      bool validPass = pass.length >= 8;
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+      final emailValid = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+      // ✅ Only check that email is valid and password is not empty
       setState(() {
-        isValid = validEmail && validPass;
+        isValid = emailValid && password.isNotEmpty;
       });
     } else {
-      final phone = _phoneC.text.trim();
+      final phone = _phoneController.text.trim();
       setState(() {
         isValid = phone.length >= 10;
       });
     }
   }
 
-  // Email Registration
-  Future<void> _registerWithEmail() async {
-    final email = _emailC.text.trim();
-    final password = _passC.text.trim();
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
-    final url = Uri.parse("https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/register");
+  // ---------------- LOGIN WITH EMAIL ---------------- //
+  void _loginWithEmail() async {
+    if (isLoading) return;
 
     setState(() => isLoading = true);
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    final url = Uri.parse("https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/login");
 
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-        }),
+        body: jsonEncode({"email": email, "password": password}),
       );
 
-      setState(() => isLoading = false);
+      if (response.statusCode == 200) {
+        UserSession().email = email;
+        UserSession().password = password;
+        
+        // Save Session
+        await UserSession().saveSession(email, password, 'USER');
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Navigator.push(
+        if (!mounted) return;
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => OtpScreen(email: email, password: password),
-          ),
+          MaterialPageRoute(builder: (_) => const EnableLocationScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.body), backgroundColor: Colors.red),
-        );
+        _showSnackBar(response.body, Colors.red);
       }
-    } catch (e) {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Server not reachable ❌"), backgroundColor: Colors.red),
-      );
+    } catch (_) {
+      _showSnackBar("Server not reachable ❌", Colors.red);
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  // Phone Registration
-  Future<void> _registerWithPhone() async {
-    final phoneNumber = '$_selectedCountryCode${_phoneC.text.trim()}';
+  // ---------------- LOGIN WITH PHONE ---------------- //
+  void _loginWithPhone() async {
+    final phoneNumber = '$_selectedCountryCode${_phoneController.text.trim()}';
     
     setState(() => isLoading = true);
 
@@ -116,9 +125,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       phoneNumber: phoneNumber,
       onCodeSent: (verificationId) {
         setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OTP bhej diya gaya! 📱'), backgroundColor: Colors.green),
-        );
+        _showSnackBar('OTP bhej diya gaya! 📱', Colors.green);
+        
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -131,36 +139,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
       onError: (error) {
         setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: Colors.red),
-        );
+        _showSnackBar(error, Colors.red);
       },
       onAutoVerified: (credential) async {
         setState(() => isLoading = false);
         final result = await _phoneAuthService.signInWithCredential(
           credential: credential,
-          onError: (error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error), backgroundColor: Colors.red),
-            );
-          },
+          onError: (error) => _showSnackBar(error, Colors.red),
         );
         if (result != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Auto-verified! ✅'), backgroundColor: Colors.green),
+          _showSnackBar('Auto-verified! ✅', Colors.green);
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const EnableLocationScreen()),
           );
-          Navigator.of(context).popUntil((route) => route.isFirst);
         }
       },
     );
   }
 
-  void _onRegister() {
-    if (isEmailMode) {
-      _registerWithEmail();
-    } else {
-      _registerWithPhone();
+  // ---------------- FORGOT PASSWORD ---------------- //
+  void _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      _showSnackBar("Please enter your email first", Colors.orange);
+      return;
     }
+
+    setState(() => isForgotLoading = true);
+
+    final url = Uri.parse("https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/forgot");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email}),
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => OtpScreen(email: email)),
+        );
+      } else {
+        _showSnackBar(response.body, Colors.red);
+      }
+    } catch (_) {
+      _showSnackBar("Server not reachable ❌", Colors.red);
+    } finally {
+      if (mounted) setState(() => isForgotLoading = false);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
   }
 
   @override
@@ -173,20 +210,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Register Account",
-                style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
-              ),
+              Text("Welcome Back 👋",
+                  style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text(
                 isEmailMode 
-                  ? "Register with your email and password"
-                  : "Register with your phone number",
-                style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54),
+                  ? "Login with your email and password"
+                  : "Login with your phone number",
+                style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54)
               ),
               const SizedBox(height: 30),
 
@@ -203,7 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onTap: () {
                           setState(() {
                             isEmailMode = true;
-                            _validate();
+                            _validateInputs();
                           });
                         },
                         child: Container(
@@ -235,7 +266,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onTap: () {
                           setState(() {
                             isEmailMode = false;
-                            _validate();
+                            _validateInputs();
                           });
                         },
                         child: Container(
@@ -267,35 +298,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 30),
 
-              // ============ CONDITIONAL INPUT FIELDS ============
               if (isEmailMode) ...[
-                // EMAIL FIELD
-                Text("Email", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15)),
+                // EMAIL
+                Text("Email", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 6),
                 TextField(
-                  controller: _emailC,
+                  controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  style: GoogleFonts.poppins(),
                   decoration: _inputDecoration("example@gmail.com"),
                 ),
-                const SizedBox(height: 20),
 
-                // PASSWORD FIELD
-                Text("Password", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15)),
+                const SizedBox(height: 22),
+
+                // PASSWORD
+                Text("Password", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 6),
                 TextField(
-                  controller: _passC,
-                  obscureText: hidePassword,
-                  style: GoogleFonts.poppins(),
-                  decoration: _inputDecoration("Minimum 8 characters").copyWith(
-                    suffixIcon: IconButton(
-                      icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility, color: Colors.black54),
-                      onPressed: () => setState(() => hidePassword = !hidePassword),
-                    ),
-                  ),
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: _inputDecoration("Enter your registered password"),
                 ),
               ] else ...[
-                // PHONE FIELD
+                 // PHONE FIELD
                 Text("Phone Number", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15)),
                 const SizedBox(height: 6),
                 Row(
@@ -322,7 +346,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
-                        controller: _phoneC,
+                        controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
@@ -335,29 +359,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
               ],
-              const SizedBox(height: 40),
 
-              // ============ REGISTER BUTTON ============
+              const SizedBox(height: 30),
+
+              // LOGIN BUTTON
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: isValid && !isLoading ? _onRegister : null,
+                  onPressed: (isValid && !isLoading) 
+                    ? (isEmailMode ? _loginWithEmail : _loginWithPhone) 
+                    : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isValid ? kButtonColor : Colors.grey.shade400,
+                    backgroundColor: isValid ? const Color(0xFFFB3300) : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          isEmailMode ? "Send OTP" : "Send OTP 📱",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          isEmailMode ? "Login" : "Send OTP", 
+                          style: GoogleFonts.poppins(fontSize: 17, color: Colors.white)
                         ),
                 ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // FORGOT PASSWORD (Only for Email)
+              if (isEmailMode)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: isForgotLoading ? null : _forgotPassword,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isForgotLoading)
+                          const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFB3300)),
+                          ),
+                        if (isForgotLoading) const SizedBox(width: 8),
+                        Text(
+                          isForgotLoading ? "Forgetting password..." : "Forgot Password?",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFFFB3300),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 25),
+
+              // REGISTER LINK
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Don't have an account? ", style: GoogleFonts.poppins(fontSize: 14)),
+                  GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                    child: Text("Register",
+                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFFFB3300))),
+                  ),
+                ],
               ),
             ],
           ),
@@ -369,17 +438,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.poppins(color: Colors.black45),
       filled: true,
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: kButtonColor, width: 1.3),
+        borderSide: const BorderSide(color: Color(0xFFFB3300), width: 1.3),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: kButtonColor, width: 2),
+        borderSide: const BorderSide(color: Color(0xFFFB3300), width: 2),
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'screens/s_screen.dart';
-import 'firebase_options.dart';
+import 'screens/user/s_screen.dart';
+import 'screens/authentication/firebase_options.dart';
 
 
 void main() async {

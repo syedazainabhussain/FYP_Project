@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'onboarding_screen.dart';
 
-import 'user_session.dart';
+import '../authentication/user_session.dart';
 import 'homescreen.dart';
-import 'mechanic_dashboard.dart';
+import '../mechanic/mechanic_dashboard.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

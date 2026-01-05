@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
-import '../services/phone_auth_service.dart';
+import '../../services/phone_auth_service.dart';
 
 class PhoneOtpScreen extends StatefulWidget {
   final String phoneNumber;

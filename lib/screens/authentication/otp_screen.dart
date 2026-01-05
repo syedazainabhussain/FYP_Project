@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'verify_screen.dart';
+import '../user/verify_screen.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email;

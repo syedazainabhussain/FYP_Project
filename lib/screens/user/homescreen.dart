@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mech_app/screens/view_detail.dart';
+import 'package:mech_app/screens/user/view_detail.dart';
 import 'mechanic_list_screen.dart';
 import 'auto_assign.dart';
-import 'package:mech_app/screens/mechanic_login.dart';
-import 'service_chat_screen.dart'; 
+import 'package:mech_app/screens/mechanic/mechanic_login.dart';
+import '../authentication/service_chat_screen.dart'; 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'user_session.dart';
+import '../authentication/user_session.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
 import 'verify_screen.dart';
