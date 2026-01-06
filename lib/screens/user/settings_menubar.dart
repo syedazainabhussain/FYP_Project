@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mech_app/main.dart'; // <-- themeNotifier yaha import
+import 'package:mech_app/main.dart';
 import 'package:mech_app/screens/user/homescreen.dart';
 import 'verify_screen.dart';
 
@@ -14,7 +14,7 @@ class SettingsMenuBar extends StatefulWidget {
 class _SettingsMenuBarState extends State<SettingsMenuBar> {
   final Color primaryColor = const Color(0xFFFB3300);
 
-  String phoneNumber = "+92 3* ** **45";
+  String phoneNumber = "+92 3** ****45";
   String language = "English";
 
   final Map<String, Map<String, String>> text = {
@@ -59,7 +59,7 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (route) => false,
+          (_) => false,
         );
         return false;
       },
@@ -74,7 +74,7 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (route) => false,
+                (_) => false,
               );
             },
           ),
@@ -123,8 +123,9 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
           ? Text(
               sub,
               style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: isDark ? Colors.white70 : Colors.black54),
+                fontSize: 13,
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
             )
           : null,
       trailing: Icon(Icons.arrow_forward_ios, color: primaryColor, size: 18),
@@ -166,7 +167,15 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   prefixText: "+92 ",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixStyle: GoogleFonts.poppins(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: primaryColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -202,7 +211,7 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
             ListTile(
               title: const Text("English"),
               trailing: language == "English"
-                  ? const Icon(Icons.check, color: Colors.deepOrange)
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 setState(() => language = "English");
@@ -212,7 +221,7 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
             ListTile(
               title: const Text("Urdu (Pakistan)"),
               trailing: language == "Urdu (Pakistan)"
-                  ? const Icon(Icons.check, color: Colors.deepOrange)
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 setState(() => language = "Urdu (Pakistan)");
@@ -236,7 +245,7 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
             ListTile(
               title: const Text("Light Theme"),
               trailing: themeNotifier.value == ThemeMode.light
-                  ? const Icon(Icons.check, color: Colors.deepOrange)
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 themeNotifier.setLight();
@@ -246,7 +255,7 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
             ListTile(
               title: const Text("Dark Theme"),
               trailing: themeNotifier.value == ThemeMode.dark
-                  ? const Icon(Icons.check, color: Colors.deepOrange)
+                  ? Icon(Icons.check, color: primaryColor)
                   : null,
               onTap: () {
                 themeNotifier.setDark();
@@ -266,10 +275,20 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: isDark ? Colors.black : Colors.white,
-        title: Text(t("logout"), style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-        content: Text(t("logoutQ"), style: TextStyle(color: isDark ? Colors.white70 : Colors.black87)),
+        title: Text(
+          t("logout"),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
+        content: Text(
+          t("logoutQ"),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+        ),
         actions: [
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => Navigator.pop(context),
             child: const Text("Cancel"),
           ),
@@ -292,9 +311,10 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
     );
   }
 
-  // ================= DELETE =================
+  // ================= DELETE ACCOUNT =================
   void _deleteAccountSheet() {
     final isDark = themeNotifier.value == ThemeMode.dark;
+
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
@@ -312,13 +332,20 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
               ),
               Text(
                 t("deleteQ"),
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black),
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
                 t("deleteSub"),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54),
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -328,6 +355,11 @@ class _SettingsMenuBarState extends State<SettingsMenuBar> {
                   minimumSize: const Size(double.infinity, 45),
                 ),
                 onPressed: () {
+                  // 🔴 BACKEND TASK:
+                  // - Delete user account permanently
+                  // - Block this phone number from re-login
+                  // - Force user to register again with new number
+
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (_) => const VerifyScreen()),

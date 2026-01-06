@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mech_app/main.dart';
+import 'package:mech_app/screens/user/book_appointments_menubar.dart';
+import 'package:mech_app/screens/user/my_request_menubar.dart';
 import 'package:mech_app/screens/user/settings_menubar.dart';
 import 'package:mech_app/screens/user/view_detail.dart';
 import 'mechanic_list_screen.dart';
@@ -211,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             MaterialPageRoute(
                               builder: (_) => MechanicListScreen(
                                 serviceType: "Nearby Mechanics",
-                                mechanics: nearbyMechanics,
+                                mechanics: nearbyMechanics, showViewOption: true,
                               ),
                             ),
                           );
@@ -369,15 +371,15 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushAndRemoveUntil(
                   context, MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false);
             }),
-            _drawerItem(Icons.build_circle_rounded, "My Requests", context, onTap: () {
+            _drawerItem(Icons.build_circle_rounded, "Request History", context, onTap: () {
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
-                  context, MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false);
+                  context, MaterialPageRoute(builder: (_) => const RequestHistoryScreen()), (route) => false);
             }),
             _drawerItem(Icons.book_online, "Book Appointments", context, onTap: () {
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
-                  context, MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false);
+                  context, MaterialPageRoute(builder: (_) => const BookAppointmentScreen()), (route) => false);
             }),
             const Divider(),
             _drawerItem(Icons.settings_rounded, "Settings", context, onTap: () {
