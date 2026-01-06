@@ -3,12 +3,22 @@ import 'package:flutter/material.dart';
 import 'screens/user/s_screen.dart';
 import 'screens/authentication/firebase_options.dart';
 
+// ===== GLOBAL THEME NOTIFIER =====
+class ThemeNotifier extends ValueNotifier<ThemeMode> {
+  ThemeNotifier() : super(ThemeMode.light);
+
+  void setDark() => value = ThemeMode.dark;
+  void setLight() => value = ThemeMode.light;
+}
+
+final themeNotifier = ThemeNotifier();
 
 void main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MechConnectApp());
 }
 
@@ -17,14 +27,31 @@ class MechConnectApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'MechConnect',
-      theme: ThemeData(
-        primaryColor: Colors.orange,
-        fontFamily: 'Poppins',
-      ),
-      home: const SplashScreen(), // 👈 Splash se start hoga
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'MechConnect',
+
+          // ===== THEMES =====
+          theme: ThemeData(
+            brightness: Brightness.light,
+            primaryColor: Colors.orange,
+            scaffoldBackgroundColor: Colors.white,
+            fontFamily: 'Poppins',
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            primaryColor: Colors.deepOrange,
+            scaffoldBackgroundColor: Colors.black,
+            fontFamily: 'Poppins',
+          ),
+          themeMode: currentMode, // <-- GLOBAL CONTROL
+
+          home: const SplashScreen(), // ya home screen
+        );
+      },
     );
   }
 }
@@ -35,7 +62,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: Text(
           'Home Screen',
@@ -43,7 +70,7 @@ class HomePage extends StatelessWidget {
             fontFamily: 'MontserratAlternates',
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.orange,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       ),

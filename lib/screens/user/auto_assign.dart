@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_app/main.dart';
 import '../authentication/map_screen.dart';
 import 'homescreen.dart';
 
@@ -7,32 +8,35 @@ class AutoAssignScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 Bottom sheet screen load hote hi
+    final isDark = themeNotifier.value == ThemeMode.dark;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showAutoAssignOptions(context);
+      _showAutoAssignOptions(context, isDark);
     });
 
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 253, 250, 250).withOpacity(0.4), // dark overlay
+        backgroundColor: isDark
+            ? Colors.black.withOpacity(0.6)
+            : const Color.fromARGB(255, 253, 250, 250).withOpacity(0.4),
         body: const SizedBox.shrink(),
       ),
     );
   }
 
-  void _showAutoAssignOptions(BuildContext context) {
+  void _showAutoAssignOptions(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       isDismissible: false,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -45,12 +49,11 @@ class AutoAssignScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 12),
 
-                
                 Container(
                   height: 4,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: isDark ? Colors.grey[700] : Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -58,22 +61,23 @@ class AutoAssignScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 /// 🔥 Title
-                const Text(
+                Text(
                   "Choose Service",
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
 
                 const SizedBox(height: 6),
 
-                const Text(
+                Text(
                   "Select a service to auto assign nearby mechanic",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.black54,
+                    color: isDark ? Colors.white70 : Colors.black54,
                   ),
                 ),
 
@@ -84,6 +88,7 @@ class AutoAssignScreen extends StatelessWidget {
                   title: "Bike Mechanic",
                   icon: Icons.motorcycle,
                   service: "Bike",
+                  isDark: isDark,
                 ),
                 const SizedBox(height: 16),
 
@@ -92,6 +97,7 @@ class AutoAssignScreen extends StatelessWidget {
                   title: "Car Mechanic",
                   icon: Icons.directions_car,
                   service: "Car",
+                  isDark: isDark,
                 ),
                 const SizedBox(height: 16),
 
@@ -100,6 +106,7 @@ class AutoAssignScreen extends StatelessWidget {
                   title: "Puncture Service",
                   icon: Icons.build_circle,
                   service: "Puncher",
+                  isDark: isDark,
                 ),
               ],
             ),
@@ -114,6 +121,7 @@ class AutoAssignScreen extends StatelessWidget {
     required String title,
     required IconData icon,
     required String service,
+    required bool isDark,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -130,26 +138,32 @@ class AutoAssignScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(
+            color: isDark ? Colors.grey[700]! : Colors.grey.shade300,
+          ),
+          color: isDark ? Colors.grey[850] : Colors.white,
         ),
         child: Row(
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: const Color(0xFFFB3300).withOpacity(0.1),
+              backgroundColor:
+                  const Color(0xFFFB3300).withOpacity(isDark ? 0.2 : 0.1),
               child: Icon(icon, color: const Color(0xFFFB3300)),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
+            Icon(Icons.arrow_forward_ios,
+                size: 16, color: isDark ? Colors.white70 : Colors.black54),
           ],
         ),
       ),
