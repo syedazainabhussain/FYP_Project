@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mech_app/main.dart';
-import 'package:mech_app/screens/user/homescreen.dart';
-import 'verify_screen.dart';
+import 'package:mech_app/screens/homescreen.dart';
+import 'package:mech_app/screens/verify_screen.dart';
 
 class SettingsMenuBar extends StatefulWidget {
   const SettingsMenuBar({super.key});

@@ -4,8 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 class Mechanic {
   final String id;
   final String name;
-  final String avatarUrl;
-  final double rating;
+  final String avatarUrl; 
+  final double rating; 
   final double distanceKm;
   final bool isOnline;
   final String phone;
@@ -38,24 +38,14 @@ class MechanicDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Detect theme
-    final brightness = Theme.of(context).brightness;
-    final isDark = brightness == Brightness.dark;
-
-    final bgColor = isDark ? Colors.black : Colors.white;
-    final cardBgColor = isDark ? Colors.grey[850] : Colors.white;
-    final textColor = isDark ? Colors.white70 : Colors.black87;
-    final subtitleColor = isDark ? Colors.white60 : Colors.grey.shade700;
-    final dividerColor = isDark ? Colors.white24 : Colors.grey;
-
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: cardBgColor,
-        title: Text('Mechanic Details', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        title: const Text('Mechanic Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: textColor, size: 22),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 22),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -65,6 +55,7 @@ class MechanicDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Mechanic Avatar & Info Row
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: Row(
@@ -72,13 +63,16 @@ class MechanicDetailScreen extends StatelessWidget {
                   children: [
                     _buildAvatar(),
                     const SizedBox(width: 12),
-                    Flexible(child: _buildMechanicInfo(textColor, subtitleColor)),
+                    Flexible(child: _buildMechanicInfo()),
                     const SizedBox(width: 8),
                     _buildStatusTag(),
                   ],
                 ),
               ),
-              Divider(height: 1, color: dividerColor),
+
+              const Divider(height: 1, color: Colors.grey),
+
+              // Rating, Distance & Experience
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: Column(
@@ -96,7 +90,10 @@ class MechanicDetailScreen extends StatelessWidget {
                   ],
                 ),
               ),
+
               const SizedBox(height: 8),
+
+              // Map Placeholder
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: AspectRatio(
@@ -104,7 +101,7 @@ class MechanicDetailScreen extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      color: isDark ? Colors.grey[800] : Colors.grey.shade100,
+                      color: Colors.grey.shade100,
                       child: Stack(
                         children: [
                           Positioned.fill(
@@ -126,7 +123,7 @@ class MechanicDetailScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                               decoration: BoxDecoration(
-                                color: cardBgColor!.withOpacity(0.95),
+                                color: Colors.white.withOpacity(0.95),
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
@@ -139,7 +136,7 @@ class MechanicDetailScreen extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       'Mechanic is at near ${mechanic.distanceKm.toStringAsFixed(1)} km — tap for directions',
-                                      style: TextStyle(fontFamily: uiFont, fontSize: 13, color: textColor),
+                                      style: TextStyle(fontFamily: uiFont, fontSize: 13),
                                     ),
                                   ),
                                   Icon(Icons.directions, color: primaryColor),
@@ -153,7 +150,10 @@ class MechanicDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 30),
+
+              // Call Mechanic Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SizedBox(
@@ -182,7 +182,10 @@ class MechanicDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 10),
+
+              // Request Mechanic Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SizedBox(
@@ -194,7 +197,7 @@ class MechanicDetailScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: cardBgColor,
+                      backgroundColor: Colors.white,
                       foregroundColor: primaryColor,
                       side: BorderSide(color: primaryColor, width: 1.5),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -205,6 +208,7 @@ class MechanicDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
             ],
           ),
@@ -224,20 +228,20 @@ class MechanicDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMechanicInfo(Color textColor, Color subtitleColor) {
+  Widget _buildMechanicInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           mechanic.name,
-          style: TextStyle(fontFamily: 'Poppins', fontSize: 17, fontWeight: FontWeight.normal, color: textColor),
+          style: const TextStyle(fontFamily: 'Poppins', fontSize: 17, fontWeight: FontWeight.normal, color: Colors.black87),
         ),
         const SizedBox(height: 6),
         Row(
           children: [
             const Icon(Icons.work_outline, size: 16, color: Colors.grey),
             const SizedBox(width: 6),
-            Text('Mobile Mechanic', style: TextStyle(fontFamily: 'Poppins', fontSize: 13, color: subtitleColor)),
+            Text('Mobile Mechanic', style: TextStyle(fontFamily: 'Poppins', fontSize: 13, color: Colors.grey.shade700)),
           ],
         ),
         const SizedBox(height: 6),
@@ -245,7 +249,7 @@ class MechanicDetailScreen extends StatelessWidget {
           children: [
             const Icon(Icons.location_on_outlined, size: 16, color: Colors.redAccent),
             const SizedBox(width: 6),
-            Text('${mechanic.distanceKm.toStringAsFixed(1)} km away', style: TextStyle(fontFamily: 'Poppins', fontSize: 13, color: subtitleColor)),
+            Text('${mechanic.distanceKm.toStringAsFixed(1)} km away', style: TextStyle(fontFamily: 'Poppins', fontSize: 13, color: Colors.grey.shade700)),
           ],
         ),
       ],
@@ -274,7 +278,7 @@ class MechanicDetailScreen extends StatelessWidget {
       children: [
         Icon(Icons.place_outlined, size: 16, color: primaryColor),
         const SizedBox(width: 6),
-        Text('${mechanic.distanceKm.toStringAsFixed(1)} km', style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
+        Text('${mechanic.distanceKm.toStringAsFixed(1)} km', style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
       ],
     );
   }

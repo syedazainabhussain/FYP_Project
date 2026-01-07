@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mech_app/screens/user/homescreen.dart';
+import 'package:mech_app/screens/homescreen.dart';
 import 'package:mech_app/screens/user/mechanic_list_book_appointment.dart';
 import 'package:url_launcher/url_launcher.dart';
 

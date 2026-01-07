@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'screens/user/s_screen.dart';
-import 'screens/authentication/firebase_options.dart';
+import 'screens/s_screen.dart';
+import 'firebase_options.dart';
 
 // ===== GLOBAL THEME NOTIFIER =====
 class ThemeNotifier extends ValueNotifier<ThemeMode> {
@@ -14,11 +14,10 @@ class ThemeNotifier extends ValueNotifier<ThemeMode> {
 final themeNotifier = ThemeNotifier();
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const MechConnectApp());
 }
 
@@ -62,7 +61,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       body: Center(
         child: Text(
           'Home Screen',
@@ -70,7 +69,7 @@ class HomePage extends StatelessWidget {
             fontFamily: 'MontserratAlternates',
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
+            color: Colors.orange,
           ),
         ),
       ),

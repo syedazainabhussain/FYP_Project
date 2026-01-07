@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../user/auto_assign.dart';
+import '../auto_assign.dart';
 import 'user_session.dart';
 
 class ServiceChatScreen extends StatefulWidget {
   final String serviceType;
-  final int id; // Initial parentID
+  final int id;
 
   const ServiceChatScreen({
     super.key,
@@ -19,13 +19,11 @@ class ServiceChatScreen extends StatefulWidget {
 }
 
 class _ServiceChatScreenState extends State<ServiceChatScreen> {
-  final Color primaryColor = const Color(0xFFFB3300); // Deep Orange
-  final Color arrowColor = const Color(0xFFFF6600); // Deep Orange for back arrow & icons
-  final Color buttonBgColor = const Color(0xFFFB3300); // Deep Orange for Confirm button
+  final Color primaryColor = const Color(0xFFFB3300);
 
   bool isLoading = true;
   bool isSubmitting = false;
-  bool isFinished = false; // To show "Welcome" message
+  bool isFinished = false;
 
   List<Map<String, dynamic>> currentOptions = [];
   List<String> selectionPath = [];
@@ -39,10 +37,9 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
     fetchOptions(widget.id);
   }
 
+  // ================= API CALL =================
   Future<void> fetchOptions(int parentId) async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     final url = Uri.parse(
         "https://mechanicapp-service-621632382478.asia-south1.run.app/api/subproblems/$parentId");
@@ -55,26 +52,21 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
 
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
-
         setState(() {
           if (data.isEmpty) {
             isFinished = true;
           } else {
             currentOptions = data
-                .map((e) => {
-                      "id": e["id"],
-                      "text": e["text"],
-                    })
+                .map((e) => {"id": e["id"], "text": e["text"]})
                 .toList();
           }
           isLoading = false;
         });
       } else {
-        throw Exception("API Failed: ${response.statusCode}");
+        throw Exception("API Failed");
       }
     } catch (e) {
       setState(() => isLoading = false);
-      debugPrint("API ERROR: $e");
     }
   }
 
@@ -88,7 +80,7 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
 
   void _resetSelection() {
     setState(() {
-      selectionPath = [];
+      selectionPath.clear();
       lastSelectedId = null;
       isFinished = false;
     });
@@ -97,91 +89,77 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final isDark = brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ================= Theme Colors =================
     final bgColor = isDark ? Colors.black : Colors.grey.shade100;
-    final cardColor = isDark ? Colors.grey[850]! : Colors.grey[100]!;
-    final titleColor = isDark ? Colors.white : Colors.black87;
-    final textColor = isDark ? Colors.white70 : Colors.black87;
-    final subtitleColor = isDark ? Colors.white60 : Colors.grey.shade700;
-    final noteFieldColor = isDark ? Colors.grey[800]! : Colors.grey.shade200;
-    final summaryBgColor = isDark ? Colors.grey[900]! : Colors.orange.shade50;
+    final cardColor = isDark ? Colors.grey.shade900 : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: cardColor,
+        backgroundColor: isDark ? Colors.black : Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: arrowColor, size: 22),
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: textColor, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           "${widget.serviceType} Assistant",
-          style:
-              TextStyle(color: titleColor, fontSize: 17, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: textColor, fontSize: 17, fontWeight: FontWeight.bold),
         ),
         actions: [
           if (selectionPath.isNotEmpty)
             IconButton(
-              icon: Icon(Icons.refresh, color: arrowColor),
+              icon: Icon(Icons.refresh, color: textColor),
               onPressed: _resetSelection,
             )
         ],
       ),
-      body: Padding(
+
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _questionCard(
-                      isFinished ? "Selection Complete" : "Tell us about your problem",
-                      isLoading
-                          ? const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(20.0),
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : isFinished
-                              ? _welcomeMessage(cardColor, isDark)
-                              : _optionsList(cardColor, textColor, subtitleColor),
-                      cardColor,
-                      titleColor,
-                    ),
-                    _questionCard(
-                      "Additional details (optional)",
-                      _noteField(noteFieldColor, textColor),
-                      cardColor,
-                      titleColor,
-                    ),
-                    const SizedBox(height: 16),
-                    _summaryCard(summaryBgColor, textColor),
-                  ],
-                ),
-              ),
+            _questionCard(
+              cardColor,
+              "Tell us about your problem",
+              isLoading
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : isFinished
+                      ? _welcomeMessage(isDark)
+                      : _optionsList(isDark),
             ),
-            const SizedBox(height: 12), // Lift confirm button slightly
+
+            _questionCard(
+              cardColor,
+              "Additional details (optional)",
+              _noteField(isDark),
+            ),
+
+            _summaryCard(isDark),
+
+            const SizedBox(height: 20),
+
             _confirmButton(),
-            const SizedBox(height: 6), // Extra padding from bottom
+
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  // ================= Widgets =================
+  // ================= WIDGETS =================
 
-  Widget _optionsList(Color cardColor, Color textColor, Color subtitleColor) {
-    if (currentOptions.isEmpty) {
-      return Text("No options available", style: TextStyle(color: textColor));
-    }
-
+  Widget _optionsList(bool isDark) {
     return Column(
       children: currentOptions.map((option) {
         return Container(
@@ -189,21 +167,23 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
           width: double.infinity,
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              side: BorderSide(color: Colors.grey.shade300),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              backgroundColor: cardColor,
-              alignment: Alignment.centerLeft,
+              backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
+              side: BorderSide(color: Colors.grey.shade400),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () => _handleOptionSelect(option),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child:
-                      Text(option["text"], style: TextStyle(color: textColor, fontSize: 15)),
+                  child: Text(option["text"],
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black)),
                 ),
-                Icon(Icons.chevron_right, color: subtitleColor, size: 20),
+                Icon(Icons.chevron_right,
+                    color: isDark ? Colors.white70 : Colors.grey),
               ],
             ),
           ),
@@ -212,36 +192,34 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
     );
   }
 
-  Widget _welcomeMessage(Color cardColor, bool isDark) {
-    final textColor = isDark ? Colors.white : Colors.black87;
-
+  // ✅ UPDATED SELECTION COMPLETE (Dark friendly)
+  Widget _welcomeMessage(bool isDark) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[850] : Colors.green.shade50,
+        color: isDark ? Colors.grey.shade800 : Colors.green.shade50,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          const Icon(Icons.check_circle, color: Colors.green, size: 48),
-          const SizedBox(height: 12),
+          Icon(Icons.check_circle,
+              color: primaryColor, size: 48),
+          const SizedBox(height: 10),
           Text(
-            "Welcome!",
+            "Selection Complete",
             style: TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "We have all the details we need.",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: textColor),
+              color: isDark ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           TextButton(
             onPressed: _resetSelection,
             child: Text(
               "Change Selection",
-              style: TextStyle(color: arrowColor),
+              style: TextStyle(
+                color: isDark ? Colors.white : primaryColor,
+              ),
             ),
           )
         ],
@@ -249,7 +227,7 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
     );
   }
 
-  Widget _questionCard(String title, Widget child, Color cardColor, Color titleColor) {
+  Widget _questionCard(Color cardColor, String title, Widget child) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -262,7 +240,8 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: titleColor)),
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           child,
         ],
@@ -270,71 +249,74 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
     );
   }
 
-  Widget _noteField(Color bgColor, Color textColor) {
+  Widget _noteField(bool isDark) {
     return TextField(
       controller: noteController,
       maxLines: 3,
-      style: TextStyle(color: textColor),
+      style: TextStyle(color: isDark ? Colors.white : Colors.black),
       decoration: InputDecoration(
         hintText: "Type here...",
         filled: true,
-        fillColor: bgColor,
+        fillColor: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
       ),
-      onChanged: (v) => setState(() {}),
     );
   }
 
-  Widget _summaryCard(Color bgColor, Color textColor) {
+  Widget _summaryCard(bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: isDark ? Colors.orange.shade900 : Colors.orange.shade50,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Summary",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
-          Divider(color: primaryColor),
-          _summaryRow("Service", widget.serviceType, textColor),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black)),
+          const Divider(),
+          _summaryRow("Service", widget.serviceType),
           if (selectionPath.isNotEmpty)
-            _summaryRow("Selection", selectionPath.join(" > "), textColor),
+            _summaryRow("Selection", selectionPath.join(" > ")),
           _summaryRow(
-              "Notes", noteController.text.isEmpty ? "-" : noteController.text, textColor),
+              "Notes", noteController.text.isEmpty ? "-" : noteController.text),
         ],
       ),
     );
   }
 
-  Widget _summaryRow(String label, String value, Color textColor) {
+  Widget _summaryRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
               flex: 2,
-              child: Text("$label:", style: TextStyle(fontWeight: FontWeight.w600, color: textColor))),
-          Expanded(flex: 3, child: Text(value, style: TextStyle(color: textColor))),
+              child: Text("$label:",
+                  style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(flex: 3, child: Text(value)),
         ],
       ),
     );
   }
 
+  // ✅ BUTTON ALWAYS ORANGE + WHITE TEXT
   Widget _confirmButton() {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 50,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: buttonBgColor, // Deep orange background
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: primaryColor,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         onPressed: isSubmitting || (!isFinished && selectionPath.isEmpty)
             ? null
@@ -353,7 +335,9 @@ class _ServiceChatScreenState extends State<ServiceChatScreen> {
             : const Text(
                 "Confirm & Find Mechanic",
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white), // Text white
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
       ),
     );
