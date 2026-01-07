@@ -10,6 +10,7 @@ class AutoAssignScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = themeNotifier.value == ThemeMode.dark;
 
+    // Show bottom sheet after frame build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showAutoAssignOptions(context, isDark);
     });
@@ -25,7 +26,7 @@ class AutoAssignScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: isDark
             ? Colors.black.withOpacity(0.6)
-            : Colors.black.withOpacity(0.3),
+            : Colors.white, // Changed to full white for light mode default
         body: const SizedBox.shrink(),
       ),
     );
@@ -36,30 +37,29 @@ class AutoAssignScreen extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       isDismissible: false,
-      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      backgroundColor: isDark ? Colors.black : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.55,
             child: Column(
               children: [
-                const SizedBox(height: 12),
-
+                // drag handle
                 Container(
                   height: 4,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
+                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-
                 const SizedBox(height: 20),
 
+                // Title
                 Text(
                   "Choose Service",
                   style: TextStyle(
@@ -68,7 +68,6 @@ class AutoAssignScreen extends StatelessWidget {
                     color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 8),
 
                 Text(
@@ -78,9 +77,9 @@ class AutoAssignScreen extends StatelessWidget {
                     color: isDark ? Colors.white70 : Colors.black54,
                   ),
                 ),
-
                 const SizedBox(height: 30),
 
+                // Service options
                 _serviceCard(
                   context,
                   title: "Bike Mechanic",
@@ -89,7 +88,6 @@ class AutoAssignScreen extends StatelessWidget {
                   isDark: isDark,
                 ),
                 const SizedBox(height: 16),
-
                 _serviceCard(
                   context,
                   title: "Car Mechanic",
@@ -98,7 +96,6 @@ class AutoAssignScreen extends StatelessWidget {
                   isDark: isDark,
                 ),
                 const SizedBox(height: 16),
-
                 _serviceCard(
                   context,
                   title: "Puncture Service",
@@ -121,6 +118,8 @@ class AutoAssignScreen extends StatelessWidget {
     required String service,
     required bool isDark,
   }) {
+    final Color primaryColor = const Color(0xFFFB3300); // Deep orange
+
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () {
@@ -136,16 +135,24 @@ class AutoAssignScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
-          color: isDark ? Colors.grey[850] : Colors.white,
+          color: isDark ? Colors.grey.shade900 : Colors.white,
+          border: Border.all(
+              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+          boxShadow: [
+            if (!isDark)
+              const BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+          ],
         ),
         child: Row(
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor:
-                  const Color(0xFFFB3300).withOpacity(0.15),
-              child: Icon(icon, color: const Color(0xFFFB3300)),
+              backgroundColor: primaryColor.withOpacity(0.15),
+              child: Icon(icon, color: primaryColor),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -159,7 +166,7 @@ class AutoAssignScreen extends StatelessWidget {
               ),
             ),
             Icon(Icons.arrow_forward_ios,
-                size: 16, color: Colors.grey),
+                size: 16, color: isDark ? Colors.white70 : Colors.grey),
           ],
         ),
       ),

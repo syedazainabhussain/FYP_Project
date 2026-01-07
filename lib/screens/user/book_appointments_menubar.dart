@@ -71,7 +71,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: primaryColor),
           onPressed: () => Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => const HomeScreen())),
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          ),
         ),
         title: Text(
           "Book Appointment",
@@ -81,37 +83,55 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
           ),
         ),
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionTitle("Select Service"),
+            _sectionTitle("Select Service", isDark),
             const SizedBox(height: 8),
             _dropdown(services, selectedService, (v) {
               setState(() => selectedService = v!);
             }, isDark),
+
             const SizedBox(height: 20),
 
-            _sectionTitleWithSeeAll(
-              "Select Nearby Mechanic",
-              "See All",
-              () async {
-                final selected = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => MechanicListScreenn(
-                      serviceType: selectedService,
-                      mechanics: mechanics,
-                      showViewOption: true, // show view button in vertical list
-                      selectedMechanicId: selectedMechanic?['id'],
+            // ================= SELECT NEARBY MECHANIC WITH SEE ALL =================
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _sectionTitle("Select Nearby Mechanic", isDark),
+                TextButton(
+                  onPressed: () async {
+                    final selected = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MechanicListScreenn(
+                          serviceType: selectedService,
+                          mechanics: mechanics,
+                          showViewOption: true,
+                          selectedMechanicId: selectedMechanic?['id'],
+                        ),
+                      ),
+                    );
+                    if (selected != null) setState(() => selectedMechanic = selected);
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+                  ),
+                  child: Text(
+                    "See All",
+                    style: GoogleFonts.poppins(
+                      color: primaryColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                );
-                if (selected != null) setState(() => selectedMechanic = selected);
-              },
+                ),
+              ],
             ),
             const SizedBox(height: 12),
+
             SizedBox(
               height: 180,
               child: ListView.builder(
@@ -121,16 +141,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   final mechanic = mechanics[index];
                   final isSelected = selectedMechanic != null &&
                       selectedMechanic!['id'] == mechanic['id'];
+
                   return Container(
                     width: 220,
                     margin: const EdgeInsets.only(right: 12),
-                    child: _mechanicCard(mechanic, isDark, isSelected),
+                    child: _mechanicCard(
+                      mechanic,
+                      isDark,
+                      isSelected,
+                    ),
                   );
                 },
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -147,9 +172,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
 
-            _sectionTitle("Service Detail"),
+            _sectionTitle("Service Detail", isDark),
             const SizedBox(height: 8),
             _inputField(
               controller: detailController,
@@ -160,7 +186,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             ),
             const SizedBox(height: 16),
 
-            _sectionTitle("Service Location"),
+            _sectionTitle("Service Location", isDark),
             const SizedBox(height: 8),
             _inputField(
               controller: addressController,
@@ -170,10 +196,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             ),
             const SizedBox(height: 16),
 
-            _sectionTitle("Select Date"),
+            _sectionTitle("Select Date", isDark),
             _dateTile(isDark),
             const SizedBox(height: 16),
-            _sectionTitle("Select Time"),
+            _sectionTitle("Select Time", isDark),
             _timeTile(isDark),
             const SizedBox(height: 30),
 
@@ -214,46 +240,169 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     );
   }
 
-  Widget _sectionTitle(String text) =>
-      Text(text, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15));
+  // ================= CARD FIXED =====================
+  Widget _mechanicCard(
+      Map<String, dynamic> mechanic, bool isDark, bool isSelected) {
+    final cardBg = isDark ? const Color(0xFF1C1C1C) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
 
-  Widget _sectionTitleWithSeeAll(String title, String seeAllText, VoidCallback onSeeAll) =>
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected ? primaryColor : Colors.transparent,
+          width: 2,
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-          TextButton(
-            onPressed: onSeeAll,
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.white),
-              overlayColor: MaterialStateProperty.all(Colors.deepOrange.shade100),
-            ),
-            child: Text(
-              seeAllText,
-              style: GoogleFonts.poppins(color: Colors.deepOrange, fontWeight: FontWeight.w600),
-            ),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundImage: AssetImage(mechanic['image']),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      mechanic['name'],
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.star,
+                            size: 14, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${mechanic['rating']}",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: subTextColor,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.location_on,
+                            size: 14, color: primaryColor),
+                        Text(
+                          "${mechanic['distance']} km",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: subTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color:
+                      mechanic['available'] ? Colors.green : Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              )
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: () => setState(() => selectedMechanic = mechanic),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  isSelected ? "Selected" : "Select",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _callMechanic(mechanic['phone']),
+                icon: const Icon(Icons.call,
+                    size: 16, color: Colors.white),
+                label: const Text(
+                  "Call",
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
           ),
         ],
-      );
+      ),
+    );
+  }
 
-  Widget _dropdown(List<String> items, String value, Function(String?) onChanged, bool isDark) =>
-      DropdownButtonFormField<String>(
-        value: value,
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: isDark ? Colors.grey[900] : Colors.white,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: primaryColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: primaryColor, width: 2),
-          ),
+  Widget _sectionTitle(String text, bool isDark) => Text(
+        text,
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       );
+
+  Widget _dropdown(List<String> items, String value,
+      Function(String?) onChanged, bool isDark) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: isDark ? Colors.grey[900] : Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: primaryColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+      ),
+    );
+  }
 
   Widget _inputField(
           {required TextEditingController controller,
@@ -280,103 +429,25 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         ),
       );
 
-  Widget _mechanicCard(Map<String, dynamic> mechanic, bool isDark, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isSelected ? primaryColor : Colors.transparent, width: 2),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(radius: 28, backgroundImage: AssetImage(mechanic['image'])),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(mechanic['name'],
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 14, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text("${mechanic['rating']}", style: GoogleFonts.poppins(fontSize: 12)),
-                        const SizedBox(width: 6),
-                        Icon(Icons.location_on, size: 14, color: primaryColor),
-                        Text("${mechanic['distance']} km", style: GoogleFonts.poppins(fontSize: 12)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: mechanic['available'] ? Colors.green : Colors.red,
-                  shape: BoxShape.circle,
-                ),
-              )
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(
-                onPressed: () => setState(() => selectedMechanic = mechanic),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(isSelected ? "Selected" : "Select",
-                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => _callMechanic(mechanic['phone']),
-                icon: const Icon(Icons.call, size: 16, color: Colors.white),
-                label: const Text("Call", style: TextStyle(color: Colors.white, fontSize: 12)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightGreen,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   void _callMechanic(String phone) async {
     final Uri uri = Uri(scheme: 'tel', path: phone);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Cannot call mechanic")));
     }
   }
 
   void _autoAssignMechanic() {
     final available = mechanics.where((m) => m['available']).toList();
     if (available.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("No available mechanics nearby")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No available mechanics nearby")));
       return;
     }
-    available.sort((a, b) => (a['distance'] as double).compareTo(b['distance'] as double));
+    available.sort((a, b) =>
+        (a['distance'] as double).compareTo(b['distance'] as double));
     setState(() => selectedMechanic = available.first);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Auto assigned ${available.first['name']}")));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Auto assigned ${available.first['name']}")));
   }
 
   Widget _dateTile(bool isDark) => ListTile(

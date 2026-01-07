@@ -6,22 +6,26 @@ class MechanicListScreenn extends StatelessWidget {
   final String serviceType;
   final List<Map<String, dynamic>> mechanics;
   final String? selectedMechanicId;
+  final bool showViewOption;
 
   const MechanicListScreenn({
     super.key,
     required this.serviceType,
     required this.mechanics,
-    this.selectedMechanicId, required bool showViewOption,
+    this.selectedMechanicId,
+    required this.showViewOption,
   });
 
   final Color primaryColor = const Color(0xFFFB3300);
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: isDark ? Colors.black : Colors.grey.shade100,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? Colors.black : Colors.white,
         elevation: 1,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 22),
@@ -30,13 +34,19 @@ class MechanicListScreenn extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Nearby Mechanics",
               style: TextStyle(
-                  color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                color: isDark ? Colors.white : Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(serviceType,
-                style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey,
+                )),
           ],
         ),
       ),
@@ -49,7 +59,7 @@ class MechanicListScreenn extends StatelessWidget {
               selectedMechanicId == mechanic['id'];
           return Container(
             margin: const EdgeInsets.only(bottom: 16),
-            child: _mechanicCard(mechanic, isSelected, context),
+            child: _mechanicCard(mechanic, isSelected, context, isDark),
           );
         },
       ),
@@ -57,15 +67,21 @@ class MechanicListScreenn extends StatelessWidget {
   }
 
   Widget _mechanicCard(
-      Map<String, dynamic> mechanic, bool isSelected, BuildContext context) {
+      Map<String, dynamic> mechanic, bool isSelected, BuildContext context, bool isDark) {
+    final cardBg = isDark ? const Color(0xFF1C1C1C) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
             color: isSelected ? primaryColor : Colors.transparent, width: 2),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        boxShadow: isDark
+            ? []
+            : const [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,18 +98,26 @@ class MechanicListScreenn extends StatelessWidget {
                   children: [
                     Text(mechanic['name'],
                         style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600, fontSize: 14)),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: textColor)),
                     const SizedBox(height: 4),
                     Row(
                       children: [
                         const Icon(Icons.star, size: 14, color: Colors.amber),
                         const SizedBox(width: 4),
                         Text("${mechanic['rating']}",
-                            style: GoogleFonts.poppins(fontSize: 12)),
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: subTextColor,
+                            )),
                         const SizedBox(width: 6),
                         Icon(Icons.location_on, size: 14, color: primaryColor),
                         Text("${mechanic['distance']} km",
-                            style: GoogleFonts.poppins(fontSize: 12)),
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: subTextColor,
+                            )),
                       ],
                     ),
                   ],
@@ -137,7 +161,7 @@ class MechanicListScreenn extends StatelessWidget {
                 label: const Text("Call",
                     style: TextStyle(color: Colors.white, fontSize: 12)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightGreen,
+                  backgroundColor: Colors.green,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   shape: RoundedRectangleBorder(

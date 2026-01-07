@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'homescreen.dart'; // 🔥 HomeScreen import
+import 'homescreen.dart';
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -31,7 +31,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
   Future<void> _loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
-
     setState(() {
       _nameController.text = prefs.getString('name') ?? 'User Name';
       _emailController.text = prefs.getString('email') ?? 'user@email.com';
@@ -63,8 +62,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    final picked =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() => _profileImage = File(picked.path));
     }
@@ -74,10 +72,15 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final bgColor = isDark ? const Color(0xFF121212) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.black : Colors.white,
+        backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: primaryColor),
@@ -93,7 +96,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white : Colors.black,
+            color: textColor,
           ),
         ),
         centerTitle: true,
@@ -107,12 +110,11 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 58,
-                  backgroundColor: primaryColor.withOpacity(0.15),
+                  backgroundColor: primaryColor.withOpacity(0.2),
                   backgroundImage:
                       _profileImage != null ? FileImage(_profileImage!) : null,
                   child: _profileImage == null
-                      ? Icon(Icons.person,
-                          size: 60, color: primaryColor)
+                      ? Icon(Icons.person, size: 60, color: primaryColor)
                       : null,
                 ),
                 Positioned(
@@ -138,24 +140,28 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               controller: _nameController,
               enabled: _editing,
               isDark: isDark,
+              cardColor: cardColor,
             ),
             _profileField(
               label: "Email Address",
               controller: _emailController,
               enabled: _editing,
               isDark: isDark,
+              cardColor: cardColor,
             ),
             _profileField(
               label: "City",
               controller: _cityController,
               enabled: _editing,
               isDark: isDark,
+              cardColor: cardColor,
             ),
             _profileField(
               label: "Phone Number",
               controller: _phoneController,
               enabled: _editing,
               isDark: isDark,
+              cardColor: cardColor,
             ),
 
             const SizedBox(height: 35),
@@ -188,8 +194,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 label: Text(
                   "Edit Profile",
                   style: GoogleFonts.poppins(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w500),
+                      color: primaryColor, fontWeight: FontWeight.w500),
                 ),
               ),
           ],
@@ -203,6 +208,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     required TextEditingController controller,
     required bool enabled,
     required bool isDark,
+    required Color cardColor,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -210,19 +216,21 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         controller: controller,
         enabled: enabled,
         style: GoogleFonts.poppins(
-            color: isDark ? Colors.white : Colors.black),
+          color: isDark ? Colors.white : Colors.black,
+        ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.poppins(
-              color: isDark ? Colors.white70 : Colors.black54),
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
           suffixIcon:
               Icon(Icons.edit, color: enabled ? primaryColor : Colors.grey),
           filled: true,
-          fillColor: isDark ? Colors.grey[900] : Colors.grey.shade100,
+          fillColor: cardColor,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(
-                color: primaryColor.withOpacity(0.4), width: 1),
+            borderSide:
+                BorderSide(color: primaryColor.withOpacity(0.4)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
