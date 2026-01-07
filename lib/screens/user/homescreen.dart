@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mech_app/main.dart';
 import 'package:mech_app/screens/user/book_appointments_menubar.dart';
 import 'package:mech_app/screens/user/my_request_menubar.dart';
+import 'package:mech_app/screens/user/my_profile_menubar.dart';
+
 import 'package:mech_app/screens/user/settings_menubar.dart';
 import 'package:mech_app/screens/user/view_detail.dart';
 import 'mechanic_list_screen.dart';
@@ -369,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _drawerItem(Icons.person_rounded, "My Profile", context, onTap: () {
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
-                  context, MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false);
+                  context, MaterialPageRoute(builder: (_) => const MyProfileScreen()), (route) => false);
             }),
             _drawerItem(Icons.build_circle_rounded, "Request History", context, onTap: () {
               Navigator.pop(context);

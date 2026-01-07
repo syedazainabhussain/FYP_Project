@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mech_app/main.dart';
-import '../authentication/map_screen.dart';
 import 'homescreen.dart';
+import '../authentication/map_screen.dart';
 
 class AutoAssignScreen extends StatelessWidget {
   const AutoAssignScreen({super.key});
@@ -25,7 +25,7 @@ class AutoAssignScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: isDark
             ? Colors.black.withOpacity(0.6)
-            : const Color.fromARGB(255, 253, 250, 250).withOpacity(0.4),
+            : Colors.black.withOpacity(0.3),
         body: const SizedBox.shrink(),
       ),
     );
@@ -53,14 +53,13 @@ class AutoAssignScreen extends StatelessWidget {
                   height: 4,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[700] : Colors.grey.shade300,
+                    color: Colors.grey.shade400,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                /// 🔥 Title
                 Text(
                   "Choose Service",
                   style: TextStyle(
@@ -70,11 +69,10 @@ class AutoAssignScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
 
                 Text(
-                  "Select a service to auto assign nearby mechanic",
-                  textAlign: TextAlign.center,
+                  "We will auto assign nearest mechanic",
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark ? Colors.white70 : Colors.black54,
@@ -105,7 +103,7 @@ class AutoAssignScreen extends StatelessWidget {
                   context,
                   title: "Puncture Service",
                   icon: Icons.build_circle,
-                  service: "Puncher",
+                  service: "Puncture",
                   isDark: isDark,
                 ),
               ],
@@ -138,9 +136,7 @@ class AutoAssignScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? Colors.grey[700]! : Colors.grey.shade300,
-          ),
+          border: Border.all(color: Colors.grey.shade300),
           color: isDark ? Colors.grey[850] : Colors.white,
         ),
         child: Row(
@@ -148,7 +144,7 @@ class AutoAssignScreen extends StatelessWidget {
             CircleAvatar(
               radius: 24,
               backgroundColor:
-                  const Color(0xFFFB3300).withOpacity(isDark ? 0.2 : 0.1),
+                  const Color(0xFFFB3300).withOpacity(0.15),
               child: Icon(icon, color: const Color(0xFFFB3300)),
             ),
             const SizedBox(width: 16),
@@ -163,7 +159,7 @@ class AutoAssignScreen extends StatelessWidget {
               ),
             ),
             Icon(Icons.arrow_forward_ios,
-                size: 16, color: isDark ? Colors.white70 : Colors.black54),
+                size: 16, color: Colors.grey),
           ],
         ),
       ),
