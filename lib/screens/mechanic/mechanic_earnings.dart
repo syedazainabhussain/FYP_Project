@@ -38,6 +38,13 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Colors.black : Colors.grey.shade100;
+    final cardColor = isDark ? Colors.grey.shade900 : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.grey;
+    final shadowColor = isDark ? Colors.black.withOpacity(0.3) : Colors.black12;
+
     int totalEarnings = completedBookings.fold(
         0, (sum, b) => sum + (b['amount'] as int));
     int todaysEarnings = completedBookings
@@ -46,14 +53,14 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
     int completedCount = completedBookings.length;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: cardColor,
         iconTheme: IconThemeData(color: primaryColor),
         title: Text(
           'Earnings',
           style: GoogleFonts.poppins(
-            color: Colors.black87,
+            color: textColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -67,16 +74,16 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _summaryCard('Total Earnings', 'PKR $totalEarnings', Colors.green),
-                _summaryCard('Today', 'PKR $todaysEarnings', Colors.blue),
+                _summaryCard('Total Earnings', 'PKR $totalEarnings', Colors.green, cardColor, shadowColor, textColor),
+                _summaryCard('Today', 'PKR $todaysEarnings', Colors.blue, cardColor, shadowColor, textColor),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _summaryCard('Completed', '$completedCount', Colors.green),
-                _summaryCard('Pending', '$pendingBookings', Colors.orange),
+                _summaryCard('Completed', '$completedCount', Colors.green, cardColor, shadowColor, textColor),
+                _summaryCard('Pending', '$pendingBookings', Colors.orange, cardColor, shadowColor, textColor),
               ],
             ),
             const SizedBox(height: 20),
@@ -89,6 +96,7 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: textColor,
                 ),
               ),
             ),
@@ -100,7 +108,7 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
                   ? Center(
                       child: Text(
                         'No completed bookings',
-                        style: GoogleFonts.poppins(fontSize: 16),
+                        style: GoogleFonts.poppins(fontSize: 16, color: subTextColor),
                       ),
                     )
                   : ListView.builder(
@@ -111,11 +119,11 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: cardColor,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: shadowColor,
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               )
@@ -148,7 +156,8 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
                                     Text(b['userName'],
                                         style: GoogleFonts.poppins(
                                             fontSize: 16,
-                                            fontWeight: FontWeight.w600)),
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor)),
                                     const SizedBox(height: 4),
                                     Text('PKR ${b['amount']}',
                                         style: GoogleFonts.poppins(
@@ -159,7 +168,7 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
                                     Text(b['date'],
                                         style: GoogleFonts.poppins(
                                             fontSize: 12,
-                                            color: Colors.grey)),
+                                            color: subTextColor)),
                                   ],
                                 ),
                               ),
@@ -176,24 +185,24 @@ class _MechanicEarningsScreenState extends State<MechanicEarningsScreen> {
   }
 
   // Summary Card Widget
-  Widget _summaryCard(String title, String value, Color color) {
+  Widget _summaryCard(String title, String value, Color valueColor, Color bgColor, Color shadowColor, Color textColor) {
     return Container(
       width: 150,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+        boxShadow: [BoxShadow(color: shadowColor, blurRadius: 8)],
       ),
       child: Column(
         children: [
           Text(title,
               style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold, fontSize: 14)),
+                  fontWeight: FontWeight.bold, fontSize: 14, color: textColor)),
           const SizedBox(height: 8),
           Text(value,
               style: GoogleFonts.poppins(
-                  fontSize: 18, fontWeight: FontWeight.w600, color: color)),
+                  fontSize: 18, fontWeight: FontWeight.w600, color: valueColor)),
         ],
       ),
     );

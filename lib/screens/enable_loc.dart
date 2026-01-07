@@ -48,7 +48,6 @@ class _EnableLocationScreenState extends State<EnableLocationScreen> {
     });
 
     try {
-      // 1. Service check
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         await Geolocator.openLocationSettings();
@@ -56,7 +55,6 @@ class _EnableLocationScreenState extends State<EnableLocationScreen> {
         return;
       }
 
-      // 2. Permission check
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -73,32 +71,24 @@ class _EnableLocationScreenState extends State<EnableLocationScreen> {
         return;
       }
 
-      // 3. Location fetch with fallback and timeout
       if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
         setState(() => _statusMessage = "Getting location...");
 
         Position? position;
-        
         try {
-          // Try getting last known position first (very fast)
           position = await Geolocator.getLastKnownPosition();
-          
-          // If last known is null or we want fresh data, try current position with timeout
           position = await Geolocator.getCurrentPosition(
             locationSettings:  AndroidSettings(
               accuracy: LocationAccuracy.high,
-              // Try without forceLocationManager first as it can hang on some devices
               forceLocationManager: false, 
             ),
           ).timeout(const Duration(seconds: 10));
         } catch (e) {
           debugPrint("Primary location fetch failed: $e. Trying fallback...");
-          
-          // Fallback: Try with forceLocationManager: true if the first one failed/timed out
           try {
             position = await Geolocator.getCurrentPosition(
               locationSettings:  AndroidSettings(
-                accuracy: LocationAccuracy.low, // Lower accuracy is often faster
+                accuracy: LocationAccuracy.low,
                 forceLocationManager: true,
               ),
             ).timeout(const Duration(seconds: 15));
@@ -117,7 +107,7 @@ class _EnableLocationScreenState extends State<EnableLocationScreen> {
             MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         } else {
-          _showSnackBar("Could not get location. Please ensure GPS is on and you are in an open area.");
+          _showSnackBar("Could not get location. Ensure GPS is on and you are in an open area.");
         }
       }
     } catch (e) {
@@ -135,19 +125,26 @@ class _EnableLocationScreenState extends State<EnableLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final hintColor = isDark ? Colors.white70 : Colors.black54;
+    final buttonColor = const Color(0xFFFB3300);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: bgColor,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.location_on_rounded, size: 90, color: Color(0xFFFB3300)),
+              Icon(Icons.location_on_rounded, size: 90, color: buttonColor),
               const SizedBox(height: 20),
-              const Text('Enable Location', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
+              Text('Enable Location', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: textColor)),
               const SizedBox(height: 12),
-              Text(_statusMessage, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, color: Colors.black54)),
+              Text(_statusMessage, textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: hintColor)),
               const SizedBox(height: 35),
               SizedBox(
                 width: double.infinity,
@@ -155,12 +152,12 @@ class _EnableLocationScreenState extends State<EnableLocationScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : handleLocationPermission,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFB3300),
+                    backgroundColor: buttonColor,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Allow', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.white)),
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Allow', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.white)),
                 ),
               ),
             ],

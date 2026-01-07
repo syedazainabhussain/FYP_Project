@@ -27,8 +27,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
   bool isValid = false;
   bool isLoading = false; 
   bool isForgotLoading = false; 
-  
-  // Toggle: true = Email, false = Phone
   bool isEmailMode = true;
   String _selectedCountryCode = '+92';
   
@@ -51,12 +49,15 @@ class _VerifyScreenState extends State<VerifyScreen> {
   }
 
   void _validateInputs() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (isEmailMode) {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
       final emailValid = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+      final passwordValid = password.length >= 8;
       setState(() {
-        isValid = emailValid && password.length >= 8;
+        isValid = emailValid && passwordValid;
       });
     } else {
       final phone = _phoneController.text.trim();
@@ -74,15 +75,12 @@ class _VerifyScreenState extends State<VerifyScreen> {
     super.dispose();
   }
 
-  // ---------------- LOGIN WITH EMAIL ---------------- //
   void _loginWithEmail() async {
     if (isLoading) return;
-
     setState(() => isLoading = true);
 
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-
     final url = Uri.parse("https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/login");
 
     try {
@@ -93,12 +91,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       );
 
       if (response.statusCode == 200) {
-        UserSession().email = email;
-        UserSession().password = password;
-        
-        // Save Session
         await UserSession().saveSession(email, password, 'USER');
-
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
@@ -114,22 +107,20 @@ class _VerifyScreenState extends State<VerifyScreen> {
     }
   }
 
-  // ---------------- LOGIN WITH PHONE ---------------- //
   void _loginWithPhone() async {
     final phoneNumber = '$_selectedCountryCode${_phoneController.text.trim()}';
-    
     setState(() => isLoading = true);
 
     await _phoneAuthService.sendOTP(
       phoneNumber: phoneNumber,
       onCodeSent: (verificationId) {
         setState(() => isLoading = false);
-        _showSnackBar('OTP bhej diya gaya! 📱', Colors.green);
-        
+        _showSnackBar('OTP sent! 📱', Colors.green);
+
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PhoneOtpScreen(
+            builder: (_) => PhoneOtpScreen(
               phoneNumber: phoneNumber,
               verificationId: verificationId,
             ),
@@ -158,7 +149,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
     );
   }
 
-  // ---------------- FORGOT PASSWORD ---------------- //
   void _forgotPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -167,7 +157,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
     }
 
     setState(() => isForgotLoading = true);
-
     final url = Uri.parse("https://mechanicapp-service-621632382478.asia-south1.run.app/api/user/forgot");
 
     try {
@@ -201,8 +190,15 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isDark ? Colors.black : Colors.white;
+    final cardColor = isDark ? Colors.grey.shade900 : Colors.grey.shade100;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final hintColor = isDark ? Colors.white70 : Colors.black54;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 30),
@@ -210,32 +206,27 @@ class _VerifyScreenState extends State<VerifyScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Welcome Back 👋",
-                  style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w700, color: textColor)),
               const SizedBox(height: 8),
               Text(
                 isEmailMode 
                   ? "Login with your email and password"
                   : "Login with your phone number",
-                style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54)
+                style: GoogleFonts.poppins(fontSize: 15, color: hintColor),
               ),
               const SizedBox(height: 30),
 
-              // ============ EMAIL / PHONE TOGGLE ============
+              // Email/Phone Toggle
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isEmailMode = true;
-                            _validateInputs();
-                          });
-                        },
+                        onTap: () => setState(() { isEmailMode = true; _validateInputs(); }),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
@@ -245,16 +236,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.email_outlined, 
-                                color: isEmailMode ? Colors.white : Colors.black54, size: 20),
+                              Icon(Icons.email_outlined, color: isEmailMode ? Colors.white : hintColor, size: 20),
                               const SizedBox(width: 8),
-                              Text(
-                                "Email",
-                                style: GoogleFonts.poppins(
-                                  color: isEmailMode ? Colors.white : Colors.black54,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              Text("Email", style: GoogleFonts.poppins(color: isEmailMode ? Colors.white : hintColor, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -262,12 +246,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isEmailMode = false;
-                            _validateInputs();
-                          });
-                        },
+                        onTap: () => setState(() { isEmailMode = false; _validateInputs(); }),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
@@ -277,16 +256,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.phone_android, 
-                                color: !isEmailMode ? Colors.white : Colors.black54, size: 20),
+                              Icon(Icons.phone_android, color: !isEmailMode ? Colors.white : hintColor, size: 20),
                               const SizedBox(width: 8),
-                              Text(
-                                "Phone",
-                                style: GoogleFonts.poppins(
-                                  color: !isEmailMode ? Colors.white : Colors.black54,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              Text("Phone", style: GoogleFonts.poppins(color: !isEmailMode ? Colors.white : hintColor, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -297,29 +269,27 @@ class _VerifyScreenState extends State<VerifyScreen> {
               ),
               const SizedBox(height: 30),
 
+              // Input Fields
               if (isEmailMode) ...[
-                // EMAIL
-                Text("Email", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500)),
+                Text("Email", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: textColor)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration("example@gmail.com"),
+                  style: TextStyle(color: textColor),
+                  decoration: _inputDecoration("example@gmail.com", cardColor, hintColor),
                 ),
-
                 const SizedBox(height: 22),
-
-                // PASSWORD
-                Text("Password", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500)),
+                Text("Password", style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: textColor)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: _inputDecoration("Min 8 characters"),
+                  style: TextStyle(color: textColor),
+                  decoration: _inputDecoration("Min 8 characters", cardColor, hintColor),
                 ),
               ] else ...[
-                 // PHONE FIELD
-                Text("Phone Number", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15)),
+                Text("Phone Number", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15, color: textColor)),
                 const SizedBox(height: 6),
                 Row(
                   children: [
@@ -328,16 +298,15 @@ class _VerifyScreenState extends State<VerifyScreen> {
                       decoration: BoxDecoration(
                         border: Border.all(color: kButtonColor, width: 1.3),
                         borderRadius: BorderRadius.circular(14),
+                        color: cardColor,
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedCountryCode,
-                          items: _countryCodes.map((c) {
-                            return DropdownMenuItem(
-                              value: c['code'],
-                              child: Text(c['code']!, style: GoogleFonts.poppins(fontSize: 15)),
-                            );
-                          }).toList(),
+                          items: _countryCodes.map((c) => DropdownMenuItem(
+                            value: c['code'],
+                            child: Text(c['code']!, style: GoogleFonts.poppins(fontSize: 15, color: textColor)),
+                          )).toList(),
                           onChanged: (v) => setState(() => _selectedCountryCode = v!),
                         ),
                       ),
@@ -351,8 +320,8 @@ class _VerifyScreenState extends State<VerifyScreen> {
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(10),
                         ],
-                        style: GoogleFonts.poppins(),
-                        decoration: _inputDecoration("3001234567"),
+                        style: TextStyle(color: textColor),
+                        decoration: _inputDecoration("3001234567", cardColor, hintColor),
                       ),
                     ),
                   ],
@@ -361,30 +330,26 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
               const SizedBox(height: 30),
 
-              // LOGIN BUTTON
+              // Login / OTP Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: (isValid && !isLoading) 
-                    ? (isEmailMode ? _loginWithEmail : _loginWithPhone) 
-                    : null,
+                  onPressed: (isValid && !isLoading) ? (isEmailMode ? _loginWithEmail : _loginWithPhone) : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isValid ? const Color(0xFFFB3300) : Colors.grey.shade400,
+                    backgroundColor: isValid ? kButtonColor : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          isEmailMode ? "Login" : "Send OTP", 
-                          style: GoogleFonts.poppins(fontSize: 17, color: Colors.white)
-                        ),
+                  child: isLoading ? const CircularProgressIndicator(color: Colors.white) : Text(
+                    isEmailMode ? "Login" : "Send OTP",
+                    style: GoogleFonts.poppins(fontSize: 17, color: Colors.white),
+                  ),
                 ),
               ),
 
               const SizedBox(height: 15),
 
-              // FORGOT PASSWORD (Only for Email)
+              // Forgot Password
               if (isEmailMode)
                 Align(
                   alignment: Alignment.centerRight,
@@ -394,19 +359,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (isForgotLoading)
-                          const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFB3300)),
-                          ),
+                          const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFB3300))),
                         if (isForgotLoading) const SizedBox(width: 8),
                         Text(
                           isForgotLoading ? "Forgetting password..." : "Forgot Password?",
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFFB3300),
-                          ),
+                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500, color: kButtonColor),
                         ),
                       ],
                     ),
@@ -415,15 +372,14 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
               const SizedBox(height: 25),
 
-              // REGISTER LINK
+              // Register
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Don't have an account? ", style: GoogleFonts.poppins(fontSize: 14)),
+                  Text("Don't have an account? ", style: GoogleFonts.poppins(fontSize: 14, color: textColor)),
                   GestureDetector(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                    child: Text("Register",
-                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFFFB3300))),
+                    child: Text("Register", style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: kButtonColor)),
                   ),
                 ],
               ),
@@ -434,20 +390,21 @@ class _VerifyScreenState extends State<VerifyScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(String hint, Color fillColor, Color hintColor) {
     return InputDecoration(
       hintText: hint,
+      hintStyle: TextStyle(color: hintColor),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: fillColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFFB3300), width: 1.3),
+        borderSide: BorderSide(color: const Color(0xFFFB3300), width: 1.3),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFFB3300), width: 2),
+        borderSide: BorderSide(color: const Color(0xFFFB3300), width: 2),
       ),
     );
   }

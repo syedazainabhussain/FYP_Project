@@ -75,6 +75,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     final bgColor = isDark ? const Color(0xFF121212) : Colors.white;
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100;
     final textColor = isDark ? Colors.white : Colors.black;
+    // ignore: unused_local_variable
     final subTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
 
     return Scaffold(

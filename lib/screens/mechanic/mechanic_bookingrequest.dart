@@ -58,7 +58,6 @@ class _MechanicBookingRequestScreenState
   @override
   void initState() {
     super.initState();
-    // Initialize TabController safely
     _tabController = TabController(length: 2, vsync: this);
   }
 
@@ -70,18 +69,23 @@ class _MechanicBookingRequestScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Colors.black : Colors.grey.shade100;
+    final cardColor = isDark ? Colors.grey.shade900 : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.grey;
+    final shadowColor = isDark ? Colors.black.withOpacity(0.3) : Colors.black12;
 
-      /// APP BAR WITH TABS
+    return Scaffold(
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: cardColor,
         elevation: 1,
         iconTheme: IconThemeData(color: primaryColor),
         title: Text(
           'Bookings',
           style: GoogleFonts.poppins(
-            color: Colors.black87,
+            color: textColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -90,10 +94,9 @@ class _MechanicBookingRequestScreenState
             ? TabBar(
                 controller: _tabController,
                 labelColor: primaryColor,
-                unselectedLabelColor: Colors.grey,
+                unselectedLabelColor: subTextColor,
                 indicatorColor: primaryColor,
-                labelStyle:
-                    GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 tabs: const [
                   Tab(text: 'Requests'),
                   Tab(text: 'History'),
@@ -101,14 +104,12 @@ class _MechanicBookingRequestScreenState
               )
             : null,
       ),
-
-      /// BODY
       body: _tabController != null
           ? TabBarView(
               controller: _tabController,
               children: [
-                _requestsTab(),
-                _historyTab(),
+                _requestsTab(cardColor, textColor, subTextColor, shadowColor),
+                _historyTab(cardColor, textColor, subTextColor, shadowColor),
               ],
             )
           : const Center(child: CircularProgressIndicator()),
@@ -116,9 +117,9 @@ class _MechanicBookingRequestScreenState
   }
 
   /// ================= REQUESTS TAB =================
-  Widget _requestsTab() {
+  Widget _requestsTab(Color cardColor, Color textColor, Color subTextColor, Color shadowColor) {
     if (bookingRequests.isEmpty) {
-      return _emptyView('No booking requests');
+      return _emptyView('No booking requests', subTextColor);
     }
 
     return ListView.builder(
@@ -126,26 +127,28 @@ class _MechanicBookingRequestScreenState
       itemCount: bookingRequests.length,
       itemBuilder: (context, index) {
         final r = bookingRequests[index];
-        return _requestCard(r, index);
+        return _requestCard(r, index, cardColor, textColor, shadowColor);
       },
     );
   }
 
-  Widget _requestCard(Map<String, dynamic> r, int index) {
+  Widget _requestCard(Map<String, dynamic> r, int index, Color cardColor, Color textColor, Color shadowColor) {
     return _cardContainer(
+      cardColor: cardColor,
+      shadowColor: shadowColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _titleRow(r['userName'], r['status']),
+          _titleRow(r['userName'], r['status'], textColor: textColor),
           const SizedBox(height: 6),
-          _infoRow(Icons.phone, r['mobile']),
-          _infoRow(Icons.location_on, r['address']),
+          _infoRow(Icons.phone, r['mobile'], textColor: textColor),
+          _infoRow(Icons.location_on, r['address'], textColor: textColor),
           const Divider(),
-          _infoRow(Icons.build, r['service']),
-          _infoRow(Icons.description, r['problem']),
+          _infoRow(Icons.build, r['service'], textColor: textColor),
+          _infoRow(Icons.description, r['problem'], textColor: textColor),
           const Divider(),
-          _infoRow(Icons.calendar_today, '${r['date']} • ${r['time']}'),
-          _infoRow(Icons.attach_money, 'PKR ${r['amount']}'),
+          _infoRow(Icons.calendar_today, '${r['date']} • ${r['time']}', textColor: textColor),
+          _infoRow(Icons.attach_money, 'PKR ${r['amount']}', textColor: textColor),
           const SizedBox(height: 10),
 
           /// ACTION BUTTONS
@@ -158,8 +161,7 @@ class _MechanicBookingRequestScreenState
                     bookingRequests.removeAt(index);
                   });
                 },
-                child:
-                    const Text('Reject', style: TextStyle(color: Colors.red)),
+                child: const Text('Reject', style: TextStyle(color: Colors.red)),
               ),
               const SizedBox(width: 8),
               ElevatedButton(
@@ -186,9 +188,9 @@ class _MechanicBookingRequestScreenState
   }
 
   /// ================= HISTORY TAB =================
-  Widget _historyTab() {
+  Widget _historyTab(Color cardColor, Color textColor, Color subTextColor, Color shadowColor) {
     if (bookingHistory.isEmpty) {
-      return _emptyView('No booking history');
+      return _emptyView('No booking history', subTextColor);
     }
 
     return ListView.builder(
@@ -197,16 +199,18 @@ class _MechanicBookingRequestScreenState
       itemBuilder: (context, index) {
         final h = bookingHistory[index];
         return _cardContainer(
+          cardColor: cardColor,
+          shadowColor: shadowColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _titleRow(h['userName'], h['status']),
+              _titleRow(h['userName'], h['status'], textColor: textColor),
               const SizedBox(height: 6),
-              _infoRow(Icons.location_on, h['address']),
+              _infoRow(Icons.location_on, h['address'], textColor: textColor),
               const Divider(),
-              _infoRow(Icons.build, h['service']),
-              _infoRow(Icons.calendar_today, '${h['date']} • ${h['time']}'),
-              _infoRow(Icons.attach_money, 'PKR ${h['amount']}'),
+              _infoRow(Icons.build, h['service'], textColor: textColor),
+              _infoRow(Icons.calendar_today, '${h['date']} • ${h['time']}', textColor: textColor),
+              _infoRow(Icons.attach_money, 'PKR ${h['amount']}', textColor: textColor),
             ],
           ),
         );
@@ -215,22 +219,22 @@ class _MechanicBookingRequestScreenState
   }
 
   /// ================= REUSABLE WIDGETS =================
-  Widget _cardContainer({required Widget child}) {
+  Widget _cardContainer({required Widget child, required Color cardColor, required Color shadowColor}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+          BoxShadow(color: shadowColor, blurRadius: 8),
         ],
       ),
       child: child,
     );
   }
 
-  Widget _titleRow(String title, String status) {
+  Widget _titleRow(String title, String status, {Color? textColor}) {
     Color color = status == 'Completed' ? Colors.green : primaryColor;
 
     return Row(
@@ -238,8 +242,8 @@ class _MechanicBookingRequestScreenState
       children: [
         Text(
           title,
-          style:
-              GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(
+              fontSize: 16, fontWeight: FontWeight.w600, color: textColor ?? Colors.black87),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -249,15 +253,14 @@ class _MechanicBookingRequestScreenState
           ),
           child: Text(
             status,
-            style: GoogleFonts.poppins(
-                color: color, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(color: color, fontWeight: FontWeight.w600),
           ),
         ),
       ],
     );
   }
 
-  Widget _infoRow(IconData icon, String text) {
+  Widget _infoRow(IconData icon, String text, {Color? textColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -265,16 +268,19 @@ class _MechanicBookingRequestScreenState
           Icon(icon, size: 18, color: primaryColor),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: GoogleFonts.poppins(fontSize: 14)),
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(fontSize: 14, color: textColor ?? Colors.black87),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _emptyView(String text) {
+  Widget _emptyView(String text, Color subTextColor) {
     return Center(
-      child: Text(text, style: GoogleFonts.poppins(fontSize: 16)),
+      child: Text(text, style: GoogleFonts.poppins(fontSize: 16, color: subTextColor)),
     );
   }
 }
